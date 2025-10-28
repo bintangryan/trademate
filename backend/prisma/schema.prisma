@@ -1,0 +1,267 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+// ======================================
+// MODEL USER & PROFIL
+// ======================================
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password_hash String
+  role          UserRole @default(buyer)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relasi
+  profile       UserProfile?
+  cart          Cart?
+  products      Product[]
+  bids          Bid[]
+  offers        Offer[]
+  orders        Order[]
+  wishlist      Wishlist[]
+  
+  @@map("users")
+}
+
+model UserProfile {
+  userId          Int      @id @map("user_id")
+  fullName        String?  @map("full_name")
+  storeName       String?  @map("store_name")
+  address         String?
+  phoneNumber     String?  @map("phone_number")
+  location        String?
+  acceptsPickup   Boolean  @default(true) @map("accepts_pickup")
+  acceptsShipping Boolean  @default(false) @map("accepts_shipping")
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_profiles")
+}
+
+// ======================================
+// MODEL PRODUK & FITUR TERKAIT
+// ======================================
+
+model Product {
+  id              Int      @id @default(autoincrement())
+  sellerId        Int      @map("seller_id")
+  name            String
+  description     String?
+  status          ProductStatus @default(available)
+  
+  price           Decimal? @db.Decimal(10, 2)
+  stock           Int?     @default(1)
+  saleType        SaleType @default(buy_now) @map("sale_type")
+  
+  // -- Bidang Lelang --
+  startingPrice   Decimal? @db.Decimal(10, 2) @map("starting_price")
+  endTime         DateTime? @map("end_time")
+  bidIncrement    Decimal? @db.Decimal(10, 2) @map("bid_increment")
+  auctionWinnerId Int?     @map("auction_winner_id")
+  
+  // -- PERUBAHAN DI SINI --
+  auctionStatus   AuctionStatus? @map("auction_status") // Status waktu lelang
+
+  reservedAt      DateTime? @map("reserved_at")
+  condition       Condition?
+  usagePeriod     String? @map("usage_period")
+  createdAt       DateTime @default(now()) @map("created_at")
+  
+  // Relasi
+  seller          User      @relation(fields: [sellerId], references: [id])
+  images          ProductImage[]
+  bids            Bid[]
+  offers          Offer[]
+  categories      ProductCategory[]
+  wishlistedBy    Wishlist[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[] 
+  
+  @@map("products")
+}
+
+// ... (Model ProductImage, Category, ProductCategory, Wishlist, Cart, CartItem, Bid, Offer, Order, OrderItem tetap sama)
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  url       String
+  
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@map("product_images")
+}
+
+model Category {
+  id       Int               @id @default(autoincrement())
+  name      String            @unique
+  products ProductCategory[]
+  @@map("categories")
+}
+
+model ProductCategory {
+  productId  Int      @map("product_id")
+  categoryId Int      @map("category_id")
+  
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+  @@map("product_categories")
+}
+
+model Wishlist {
+  userId    Int      @map("user_id")
+  productId Int      @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([userId, productId])
+  @@map("wishlists")
+}
+model Cart {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique @map("user_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  
+  @@map("carts")
+}
+
+model CartItem {
+  id          Int      @id @default(autoincrement())
+  cartId      Int      @map("cart_id")
+  productId   Int      @map("product_id")
+  quantity    Int      @default(1)
+  agreedPrice Decimal  @db.Decimal(10, 2) @map("agreed_price")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  cart        Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+  
+  @@map("cart_items")
+}
+model Bid {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  userId    Int      @map("user_id")
+  amount    Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("bids")
+}
+
+model Offer {
+  id         Int         @id @default(autoincrement())
+  productId  Int         @map("product_id")
+  buyerId    Int         @map("buyer_id")
+  offerPrice Decimal     @db.Decimal(10, 2) @map("offer_price")
+  status     OfferStatus @default(pending)
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  buyer      User    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  @@map("offers")
+}
+
+model Order {
+  id                Int         @id @default(autoincrement())
+  buyerId           Int         @map("buyer_id")
+  finalAmount       Decimal     @db.Decimal(10, 2) @map("final_amount")
+  status            OrderStatus @default(payment_pending)
+  
+  paymentMethod     String?     @map("payment_method")
+  shippingMethod    String?     @map("shipping_method")
+
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  items             OrderItem[]
+  buyer             User     @relation(fields: [buyerId], references: [id])
+  @@map("orders")
+}
+
+model OrderItem {
+  id              Int      @id @default(autoincrement())
+  orderId         Int      @map("order_id")
+  productId       Int      @map("product_id")
+  agreedPrice     Decimal  @db.Decimal(10, 2) @map("agreed_price")
+  quantity        Int      @default(1)
+
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// ======================================
+// ENUMS
+// ======================================
+
+enum UserRole {
+  buyer
+  seller
+  admin
+  @@map("user_role")
+}
+
+enum SaleType {
+  buy_now
+  auction
+  @@map("sale_type")
+}
+
+// -- PERUBAHAN DI SINI --
+enum ProductStatus {
+  available
+  in_negotiation
+  reserved
+  sold
+  unavailable
+  cancelled_by_buyer // Status baru untuk lelang yang tidak di-checkout
+  @@map("product_status")
+}
+
+// -- ENUM BARU DI SINI --
+enum AuctionStatus {
+  running // Saat lelang sedang berjalan
+  ended   // Saat waktu lelang telah berakhir
+  @@map("auction_status")
+}
+
+enum Condition {
+  like_new
+  good_condition
+  minor_defects
+  @@map("product_condition")
+}
+
+enum OfferStatus {
+  pending
+  accepted
+  countered
+  declined
+  @@map("offer_status")
+}
+
+enum OrderStatus {
+  payment_pending
+  paid
+  shipped
+  completed
+  cancelled
+  @@map("order_status")
+}

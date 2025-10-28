@@ -1,0 +1,206 @@
+@import "tailwindcss";
+
+:root {
+  /* Palet Warna Utama Baru */
+  --color-lelang: #003F91;       /* Dark Blue: Lelang, Dominasi, Branding */
+  --color-lelang-dark: #032e66;  /* Lelang Hover/Dark Accent */
+  --color-lelang-light: #1a6dda; /* Lelang Light Border/Accent */
+  
+  --color-tawar: #5DA9E9;        /* Medium Blue: Beli & Tawar, Aksen Sekunder */
+  --color-tawar-dark: #1c7ecf;   /* Tawar Hover/Dark Accent */
+  --color-tawar-light: #D0E6FA;  /* Tawar Light Border/Accent */
+  
+  --color-accent-bg: #c8c8c8;    /* Very Light Green/Mint: Soft Accent BG (#E5F4E3) */
+  
+  /* Warna Teks & Netral */
+  --color-primary-text: #2F4550; /* Dark Blue-Gray: Teks Dominan */
+  --color-background: #F4F4F9;    /* Very Light Gray/Blue (#F4F4F9) */
+  
+  /* Warna Sistem Emosi */
+  --color-danger: #EF4444;        /* Merah: Tolak, Gagal */
+  --color-danger-dark: #d31d1d;
+  --color-success: #10B981;
+  --color-success-dark: #059263;        /* Hijau: Terima, Sukses */
+  --color-warning: #f6b23d;       /* Kuning: Pending, Counter */
+  --color-warning-dark: #de9619;
+}
+
+@theme inline {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-primary-text);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --color-background: #1f2937;
+    --color-foreground: #f3f4f6;
+    --color-lelang: #5DA9E9; 
+    --color-lelang-dark: #4a98db;
+    --color-lelang-light: #91C1FF;
+    --color-tawar: #003F91;
+    --color-tawar-dark: #00367D;
+    --color-tawar-light: #D0E6FA;
+    --color-primary-text: #f3f4f6;
+    --color-danger: #f87171;
+  }
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* --- KELAS UTILITY --- */
+
+.input-style {
+  @apply w-full px-4 py-2 border border-gray-300 rounded-lg bg-white 
+         text-gray-900 placeholder-gray-500 transition-colors 
+         focus:outline-none focus:ring-2 focus:ring-[var(--color-lelang)] focus:border-[var(--color-lelang)];
+}
+
+.btn-lelang {
+  @apply px-4 py-2 bg-[var(--color-lelang)] text-white rounded-lg font-semibold 
+         hover:bg-[var(--color-lelang-dark)] disabled:bg-gray-400 transition-colors;
+}
+
+.btn-tawar {
+    @apply px-4 py-2 bg-[var(--color-tawar)] text-white rounded-lg font-semibold 
+           hover:bg-[var(--color-tawar-dark)] disabled:bg-gray-400 transition-colors;
+}
+
+/* Gaya untuk tombol Aksi Penjual pada halaman tawaran/penjualan */
+.btn-accept { 
+    @apply px-3 py-1 bg-[var(--color-success)] text-white rounded text-sm disabled:bg-gray-400 hover:bg-green-700 transition-colors; 
+}
+.btn-counter { 
+    @apply px-3 py-1 bg-[var(--color-warning)] text-white rounded text-sm disabled:bg-gray-400 hover:bg-amber-600 transition-colors; 
+}
+.btn-decline { 
+    @apply px-3 py-1 bg-[var(--color-danger)] text-white rounded text-sm disabled:bg-gray-400 hover:bg-red-600 transition-colors; 
+}
+
+@keyframes heart-rotate-fill {
+    0% {
+        transform: scale(0.7) rotateY(0deg);
+        opacity: 0.5;
+        fill: none;
+        color: var(--color-danger); /* Set warna stroke di awal */
+    }
+    50% {
+        transform: scale(1.2) rotateY(180deg);
+        opacity: 1;
+        fill: var(--color-danger); /* Mulai mengisi */
+        color: var(--color-danger); /* Pastikan warna stroke tetap merah */
+    }
+    100% {
+        transform: scale(1) rotateY(360deg);
+        opacity: 1;
+        fill: var(--color-danger);
+        color: var(--color-danger);
+    }
+}
+
+@keyframes heart-rotate-unfill {
+    0% {
+        transform: scale(1) rotateY(0deg);
+        opacity: 1;
+        fill: var(--color-danger);
+        color: var(--color-danger);
+    }
+    50% {
+        transform: scale(0.7) rotateY(180deg);
+        opacity: 0.5;
+        fill: none; /* Mulai mengosongkan */
+        color: var(--color-danger);
+    }
+    100% {
+        transform: scale(1) rotateY(360deg);
+        opacity: 1;
+        fill: none;
+        color: var(--color-danger);
+    }
+}
+
+
+/* Kelas Tailwind untuk menggunakan animasi */
+.animate-heart-fill {
+    animation: heart-rotate-fill 2s ease-out forwards;
+}
+
+.animate-heart-unfill {
+    animation: heart-rotate-unfill 2s ease-out forwards;
+}
+
+@keyframes jump {
+  0%, 100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.3) translateY(-5px); /* Membesar dan sedikit melompat */
+  }
+  60% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-up {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+.animate-scale-up {
+  animation: scale-up 0.3s ease-out forwards;
+}
+
+.animate-jump {
+  animation: jump 0.6s ease-in-out;
+}
+.nav-link {
+    position: relative;
+    padding-bottom: 8px; /* Memberi ruang untuk garis bawah */
+    transition: color 0.2s;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%; /* Mulai dari tengah */
+    transform: translateX(-50%);
+    background-color: var(--color-tawar);
+    transition: width 0.4s ease-out; /* Animasi lebar */
+}
+
+.nav-link:hover::after {
+    width: 100%; /* Lebar penuh saat hover */
+}
+
+.nav-link.active::after {
+    width: 100%; /* Tetap aktif di 100% */
+}
