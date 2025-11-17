@@ -40,7 +40,7 @@ export default function SettingsPage() {
         try {
             const token = localStorage.getItem('token');
             // --- PERBAIKAN DI SINI: Ganti URL ---
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me', { // <-- URL diubah ke '/me`
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me`, { 
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             // --- AKHIR PERBAIKAN ---
