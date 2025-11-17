@@ -7,7 +7,7 @@ import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import offerRoutes from './routes/offerRoutes.js';
 import bidRoutes from './routes/bidRoutes.js'; 
-import auctionRoutes from './routes/auctionRoutes.js'; // <-- IMPORT BARU
+import auctionRoutes from './routes/auctionRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import assetRoutes from './routes/assetRoutes.js'; 
 import wishlistRoutes from './routes/wishlistRoutes.js';
@@ -19,7 +19,30 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3110;
 
-app.use(cors()); 
+// --- PERBAIKAN CORS (Whitelist) DIMULAI DI SINI ---
+
+// Daftar URL yang diizinkan (lokal dan produksi)
+const whitelist = [
+  'http://localhost:3000',               // Untuk development Anda
+  'https://trademateweb.netlify.app'    // URL Netlify Anda
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Izinkan 'origin' jika ada di whitelist ATAU jika 'origin' tidak ada (seperti request dari Postman/curl)
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
+
+// Ganti app.use(cors()); yang lama dengan ini:
+app.use(cors(corsOptions));
+
+// --- AKHIR PERBAIKAN CORS ---
+
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
@@ -28,7 +51,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes); 
 app.use('/api/offers', offerRoutes);
 app.use('/api/bids', bidRoutes); 
-app.use('/api/auctions', auctionRoutes); // <-- GUNAKAN ROUTE BARU
+app.use('/api/auctions', auctionRoutes); 
 app.use('/api/orders', orderRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/wishlist', wishlistRoutes); 
@@ -36,9 +59,9 @@ app.use('/api/notifications', notificationRoutes);
 
 
 app.get('/', (req, res) => {
-  res.send('API Trademate Berhasil Terhubung!');
+  res.send('API Trademate Berhasil Terhubung!');
 });
 
 app.listen(PORT, () => {
-  console.log(`Server berjalan di http://localhost:${PORT}`);
+  console.log(`Server berjalan di http://localhost:${PORT}`);
 });
