@@ -1,5 +1,7 @@
 'use client';
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+
+import { Suspense } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -36,10 +38,11 @@ function SelectionCard({ icon, label, value, name, selectedValue, onChange, disa
     );
 }
 
-export default function CheckoutPage() {
+// --- 3. Komponen ini tetap 'CheckoutContent' (TIDAK ADA PERUBAHAN DI SINI) ---
+function CheckoutContent() {
     const { user } = useAuth();
     const router = useRouter();
-    const searchParams = useSearchParams();
+    const searchParams = useSearchParams(); // <-- Ini sekarang aman di dalam Suspense
     
     const [selectedItems, setSelectedItems] = useState([]);
     const [sellerAddress, setSellerAddress] = useState('');
@@ -49,8 +52,7 @@ export default function CheckoutPage() {
     const [shippingMethod, setShippingMethod] = useState('courier');
     const [paymentMethod, setPaymentMethod] = useState('bank_transfer');
 
-    // --- PERBAIKAN PADA useCallback ---
-    // Tambahkan dependency array yang benar
+    // ... (seluruh sisa logika Anda: fetchData, useEffect, handleCreateOrder, dll. TETAP SAMA) ...
     const fetchData = useCallback(async () => {
         if (!user) return;
         const itemIdsParam = searchParams.get('items');
@@ -88,7 +90,7 @@ export default function CheckoutPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [user, router, searchParams]); // <-- Dependency array yang benar
+    }, [user, router, searchParams]); 
 
     useEffect(() => {
         fetchData();
@@ -125,9 +127,6 @@ export default function CheckoutPage() {
         }
     };
 
-    // --- PERBAIKAN PADA useMemo ---
-    // Dependency array ini sudah benar, linter-nya yang keliru.
-    // Kode ini tidak perlu diubah, tapi saya sertakan untuk kelengkapan.
     const totalPrice = useMemo(() => {
         return selectedItems.reduce((total, item) => total + parseFloat(item.agreedPrice), 0);
     }, [selectedItems]);
@@ -136,7 +135,8 @@ export default function CheckoutPage() {
 
     if (isLoading) return <div className="p-8 text-center">Memuat...</div>;
 
-return (
+    // --- Seluruh JSX Anda (return (...)) tetap sama persis di sini ---
+    return (
         <div className="bg-gray-50 min-h-screen">
             <div className="container mx-auto p-4 sm:p-8">
                 <h1 className="text-3xl font-bold mb-8">Checkout</h1>
@@ -239,15 +239,12 @@ return (
     );
 }
 
-// Salin fungsi-fungsi handler yang tidak diubah agar kode tetap lengkap
-const tempFetchData = async () => {};
-const tempHandleCreateOrder = async () => {};
-
-Object.assign(CheckoutPage, {
-  defaultProps: {
-    fetchData: tempFetchData,
-    handleCreateOrder: tempHandleCreateOrder,
-    totalPrice: 0,
-    formatRupiah: () => ''
-  }
-});
+// --- 4. 'export default' PEMBUNGKUS (TIDAK BERUBAH) ---
+// Ini adalah komponen 'pembungkus' yang menyediakan <Suspense>
+export default function CheckoutPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center">Memuat checkout...</div>}>
+            <CheckoutContent />
+        </Suspense>
+    )
+}
