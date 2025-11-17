@@ -1,4 +1,8 @@
+// src/controllers/cartController.js
 import prisma from '../lib/prisma.js';
+// --- 1. Impor createNotification ---
+import { createNotification } from './notificationController.js';
+
 
 // Fungsi untuk membuat keranjang jika belum ada
 const getOrCreateCart = async (userId) => {
@@ -84,7 +88,7 @@ export const getCart = async (req, res) => {
           include: {
             product: {
               include: {
-                images: true, // <-- TAMBAHKAN BARIS INI
+                images: true, 
               },
             },
           },
@@ -111,7 +115,12 @@ export const removeFromCart = async (req, res) => {
     await prisma.$transaction(async (tx) => {
       const itemInCart = await tx.cartItem.findFirst({
         where: { id: parseInt(itemId), cart: { userId } },
-        include: { product: true },
+        // --- 2. Ambil 'name' dan 'sellerId' ---
+        include: { 
+            product: {
+                select: { id: true, name: true, sellerId: true, status: true, saleType: true }
+            }
+        },
       });
 
       if (!itemInCart) {
@@ -120,31 +129,24 @@ export const removeFromCart = async (req, res) => {
 
       const { product } = itemInCart;
 
+      // 1. Logika untuk mereset status JIKA 'reserved'
       if (product.status === 'reserved') {
-        let newStatus = 'available';
+        let newStatus = 'available'; // Default reset untuk 'buy_now'
         
-        // --- PERBAIKAN UTAMA DI SINI ---
-        if (product.saleType === 'buy_now') {
-          const acceptedOffer = await tx.offer.findFirst({
-            where: {
-              productId: product.id,
-              buyerId: userId,
-              status: 'accepted',
-            },
-          });
-
-          // Jika ditemukan, HAPUS tawaran tersebut
-          if (acceptedOffer) {
-            await tx.offer.delete({
-              where: { id: acceptedOffer.id },
-            });
-          }
-        } 
-        // --- AKHIR PERBAIKAN ---
-        else if (product.saleType === 'auction') {
-          newStatus = 'cancelled_by_buyer';
+        if (product.saleType === 'auction') {
+          newStatus = 'cancelled_by_buyer'; // Lelang punya status khusus
+          
+          // --- 3. KIRIM NOTIFIKASI KE SELLER ---
+          await createNotification(
+            product.sellerId,
+            'auction_failed_buyer',
+            `Pemenang lelang "${product.name}" menghapus item dari keranjang.`,
+            '/dashboard/auctions'
+          );
+          // ------------------------------------
         }
-
+        
+        // Terapkan reset status
         await tx.product.update({
           where: { id: product.id },
           data: {
@@ -155,6 +157,24 @@ export const removeFromCart = async (req, res) => {
         });
       }
 
+      // 2. Logika untuk menghapus tawaran (KHUSUS 'buy_now')
+      if (product.saleType === 'buy_now') {
+        const acceptedOffer = await tx.offer.findFirst({
+          where: {
+            productId: product.id,
+            buyerId: userId,
+            status: 'accepted',
+          },
+        });
+
+        if (acceptedOffer) {
+          await tx.offer.delete({
+            where: { id: acceptedOffer.id },
+          });
+        }
+      } 
+
+      // 3. Hapus item dari keranjang (selalu berjalan)
       await tx.cartItem.delete({
         where: { id: parseInt(itemId) },
       });

@@ -13,13 +13,12 @@ export default function LandingPage() {
                 
                 {/* KOLOM KIRI: Judul dan Deskripsi */}
                 <div className="text-center md:text-left">
-                    <h1 className="text-12xl md:text-7xl font-extrabold text-gray-900 mb-4 tracking-tight leading-snug"> 
+                    <h1 className="text-12xl md:text-6xl font-extrabold text-gray-900 mb-4 tracking-tight leading-snug"> 
                         <span className="text-[var(--color-lelang)]">Solusi Mudah</span>
                         <br />
-                        <span className="text-[var(--color-tawar)]">Jual Beli</span><br/>
-                        <span> Barang Bekas</span>
+                        <span className="text-[var(--color-tawar)]">Jual Beli Barang Bekas</span><br/>
                     </h1>
-                    <p className="text-2xl text-gray-700 max-w-lg md:max-w-none mx-auto md:mx-0 font-medium">
+                    <p className="text-xl text-gray-700 max-w-lg md:max-w-none mx-auto md:mx-0 font-medium">
                         Temukan barang impianmu atau ubah aset lama menjadi uang. TradeMate memberikan kendali penuh untuk kamu menentukan harga
                     </p>
                 </div>
@@ -66,14 +65,14 @@ export default function LandingPage() {
                 <div className="flex flex-col md:flex-row justify-center space-y-10 md:space-y-0 md:space-x-12">
                     
                     <div className="flex flex-col items-center max-w-xs">
-                         <Wallet size={40} className="text-[var(--color-lelang)] bg-[var(--color-accent-bg)] p-3 rounded-full mb-4 shadow-md" />
+                         <Wallet size={40} className="text-white bg-[var(--color-tawar)] p-3 rounded-full mb-4 shadow-md" />
                         <h4 className="font-bold text-xl text-gray-900 mb-2">Fleksibilitas Harga</h4>
                         <p className="text-md text-gray-600">Kamu bebas menawarkan harga semaumu. Trademate memberikan akses negosiasi yang fleksibel dan terbuka</p>
                     </div>
 
                     {/* Benefit 1: Aksi Cepat */}
                     <div className="flex flex-col items-center max-w-xs">
-                        <Zap size={40} className="text-[var(--color-lelang)] bg-[var(--color-accent-bg)] p-3 rounded-full mb-4 shadow-md" />
+                        <Zap size={40} className="text-white bg-[var(--color-tawar)] p-3 rounded-full mb-4 shadow-md" />
                         <h4 className="font-bold text-xl text-gray-900 mb-2">Proses Instan</h4>
                         <p className="text-md text-gray-600">Proses bid dan tawar dilakukan secara real-time, memastikan pengalaman jual beli yang cepat dan efisien</p>
                     </div>
@@ -82,7 +81,7 @@ export default function LandingPage() {
                     
                     {/* Benefit 3: Lelang Transparan */}
                     <div className="flex flex-col items-center max-w-xs">
-                        <Scale size={40} className="text-[var(--color-lelang)] bg-[var(--color-accent-bg)] p-3 rounded-full mb-4 shadow-md" />
+                        <Scale size={40} className="text-white bg-[var(--color-tawar)] p-3 rounded-full mb-4 shadow-md" />
                         <h4 className="font-bold text-xl text-gray-900 mb-2">Transparansi Penuh</h4>
                         <p className="text-md text-gray-600">Setiap bid tercatat, setiap tawaran terlihat. Kamu selalu tahu posisi dan peluang kemenanganmu</p>
                     </div>

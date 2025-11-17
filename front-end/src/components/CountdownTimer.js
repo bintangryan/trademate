@@ -1,22 +1,26 @@
 // src/components/CountdownTimer.js
 'use client';
 
-import { useState, useEffect, useCallback } from 'react'; // Impor useCallback
+import { useState, useEffect, useCallback } from 'react';
 
 export default function CountdownTimer({ expiryTimestamp, onExpire }) {
-    // 1. Bungkus fungsi dengan useCallback agar tidak dibuat ulang di setiap render
+    
+    // --- 1. PERBAIKI FUNGSI KALKULASI ---
     const calculateTimeLeft = useCallback(() => {
         const difference = +new Date(expiryTimestamp) - +new Date();
         let timeLeft = {};
 
         if (difference > 0) {
             timeLeft = {
+                // Tambahkan kalkulasi JAM
+                jam: Math.floor((difference / (1000 * 60 * 60))),
                 menit: Math.floor((difference / 1000 / 60) % 60),
                 detik: Math.floor((difference / 1000) % 60),
             };
         }
         return timeLeft;
-    }, [expiryTimestamp]); // Fungsi ini hanya akan dibuat ulang jika expiryTimestamp berubah
+    }, [expiryTimestamp]); 
+    // -------------------------------------
 
     const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
@@ -29,19 +33,26 @@ export default function CountdownTimer({ expiryTimestamp, onExpire }) {
             // Jika waktu habis, bersihkan interval dan panggil onExpire
             if (Object.keys(newTimeLeft).length === 0) {
                 clearInterval(timer);
-                onExpire();
+                if (onExpire) { // Pastikan onExpire ada
+                    onExpire();
+                }
             }
         }, 1000);
 
-        // Fungsi cleanup untuk membersihkan interval saat komponen dilepas
+        // Fungsi cleanup
         return () => clearInterval(timer);
-    }, [calculateTimeLeft, onExpire]); // 2. Daftarkan dependensi yang benar
+    }, [calculateTimeLeft, onExpire]); // Dependensi sudah benar
 
     const formatTime = (time) => String(time).padStart(2, '0');
 
+    // --- 2. PERBAIKI TAMPILAN (RENDER) ---
     return (
         <span className="font-bold text-red-600">
-            {timeLeft.menit !== undefined ? `${formatTime(timeLeft.menit)}:${formatTime(timeLeft.detik)}` : '00:00'}
+            {timeLeft.jam !== undefined 
+                ? `${formatTime(timeLeft.jam)}:${formatTime(timeLeft.menit)}:${formatTime(timeLeft.detik)}` 
+                : '00:00:00'
+            }
         </span>
     );
+    // -----------------------------------
 }

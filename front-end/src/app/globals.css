@@ -4,11 +4,11 @@
   /* Palet Warna Utama Baru */
   --color-lelang: #003F91;       /* Dark Blue: Lelang, Dominasi, Branding */
   --color-lelang-dark: #032e66;  /* Lelang Hover/Dark Accent */
-  --color-lelang-light: #1a6dda; /* Lelang Light Border/Accent */
+  --color-lelang-light: #003F91; /* Lelang Light Border/Accent */
   
-  --color-tawar: #5DA9E9;        /* Medium Blue: Beli & Tawar, Aksen Sekunder */
-  --color-tawar-dark: #1c7ecf;   /* Tawar Hover/Dark Accent */
-  --color-tawar-light: #D0E6FA;  /* Tawar Light Border/Accent */
+  --color-tawar: #2eb1e9;        /* Medium Blue: Beli & Tawar, Aksen Sekunder */
+  --color-tawar-dark: #0f8dc2;   /* Tawar Hover/Dark Accent */
+  --color-tawar-light: #c6e8f7;  /* Tawar Light Border/Accent */
   
   --color-accent-bg: #c8c8c8;    /* Very Light Green/Mint: Soft Accent BG (#E5F4E3) */
   
@@ -59,6 +59,12 @@ body {
 
 .input-style {
   @apply w-full px-4 py-2 border border-gray-300 rounded-lg bg-white 
+         text-gray-900 placeholder-gray-500 transition-colors 
+         focus:outline-none focus:ring-2 focus:ring-[var(--color-lelang)] focus:border-[var(--color-lelang)];
+}
+
+.input-style-tawar {
+  @apply w-full px-4 py-2 border border-[var(--color-tawar)] rounded-lg bg-white 
          text-gray-900 placeholder-gray-500 transition-colors 
          focus:outline-none focus:ring-2 focus:ring-[var(--color-lelang)] focus:border-[var(--color-lelang)];
 }

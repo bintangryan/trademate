@@ -21,7 +21,7 @@ function TabButton({ title, isActive, onClick, icon }) {
             onClick={onClick}
             className={`flex items-center space-x-2 px-3 py-3 font-semibold text-sm transition-colors whitespace-nowrap ${
                 isActive
-                    ? 'border-b-2 border-[var(--color-lelang)] text-[var(--color-lelang)]'
+                    ? 'border-b-2 border-[var(--color-tawar)] text-[var(--color-tawar)]'
                     : 'text-gray-500 hover:text-gray-800 border-b-2 border-transparent'
             }`}
         >

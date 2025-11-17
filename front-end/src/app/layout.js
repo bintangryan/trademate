@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { AuthProvider } from "@/context/AuthContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { CartProvider } from "@/context/CartContext"; // <-- 1. Impor CartProvider
+import { NotificationProvider } from "@/context/NotificationContext"; 
 import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ["latin"] });
@@ -21,9 +22,11 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <WishlistProvider>
             <CartProvider> {/* <-- 2. Bungkus di sini */}
-              <Toaster position="top-center" reverseOrder={false} />
-              <Navbar />
-              <main>{children}</main>
+              <NotificationProvider>
+                <Toaster position="top-center" reverseOrder={false} />
+                <Navbar />
+                <main>{children}</main>
+              </NotificationProvider>
             </CartProvider> {/* <-- 3. Tutup di sini */}
           </WishlistProvider>
         </AuthProvider>

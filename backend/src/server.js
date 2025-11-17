@@ -11,6 +11,7 @@ import auctionRoutes from './routes/auctionRoutes.js'; // <-- IMPORT BARU
 import orderRoutes from './routes/orderRoutes.js';
 import assetRoutes from './routes/assetRoutes.js'; 
 import wishlistRoutes from './routes/wishlistRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import cors from 'cors';
 
 dotenv.config();
@@ -31,6 +32,8 @@ app.use('/api/auctions', auctionRoutes); // <-- GUNAKAN ROUTE BARU
 app.use('/api/orders', orderRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/wishlist', wishlistRoutes); 
+app.use('/api/notifications', notificationRoutes); 
+
 
 app.get('/', (req, res) => {
   res.send('API Trademate Berhasil Terhubung!');

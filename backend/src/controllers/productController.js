@@ -1,6 +1,8 @@
+// src/controllers/productController.js
 import prisma from '../lib/prisma.js';
+import { createNotification } from './notificationController.js';
 
-// ... (fungsi calculateEndTime, createProduct, getAllProducts, getProductById tetap sama)
+// ... (Semua fungsi dari createProduct hingga reAuctionProduct tetap sama persis)
 const calculateEndTime = (value, unit) => {
     const durationValue = parseFloat(value);
     
@@ -46,16 +48,36 @@ export const createProduct = async (req, res) => {
             durationUnit, 
             bidIncrement,
             condition,
-            usagePeriod,
+            // --- PERUBAHAN INPUT ---
+            usagePeriodValue,
+            usagePeriodUnit,
+            // -----------------------
             categoryIds
         } = req.body;
 
+        // --- VALIDASI NAMA & KONDISI ---
         if (!name || !condition) {
-            return res.status(400).json({ message: 'Name and condition are required' });
+            return res.status(400).json({ message: 'Nama dan kondisi wajib diisi' });
+        }
+        
+        // --- VALIDASI NAMA (Regex: hanya huruf, angka, spasi, dan .,-') ---
+        const nameRegex = /^[a-zA-Z0-9\s.,'-]+$/;
+        if (!nameRegex.test(name)) {
+            return res.status(400).json({ message: 'Nama produk hanya boleh berisi huruf, angka, spasi, dan simbol dasar (.,-\').' });
         }
         
         if (!categoryIds || !Array.isArray(categoryIds) || categoryIds.length !== 1) {
             return res.status(400).json({ message: 'Product must be assigned to exactly one category ID.' });
+        }
+        
+        // --- PERUBAHAN: Menggabungkan usagePeriod ---
+        let usagePeriodString = null;
+        if (usagePeriodValue && usagePeriodUnit) {
+            // Pastikan value adalah angka
+            const periodVal = parseInt(usagePeriodValue);
+            if (!isNaN(periodVal) && periodVal > 0) {
+                 usagePeriodString = `${periodVal} ${usagePeriodUnit}`;
+            }
         }
         
         let productData = {
@@ -63,20 +85,30 @@ export const createProduct = async (req, res) => {
             description,
             saleType,
             condition,
-            usagePeriod,
+            usagePeriod: usagePeriodString, // <-- Disimpan sebagai string gabungan
             sellerId: req.user.userId,
             stock: 1,
         };
+        // ----------------------------------------
 
         if (saleType === 'buy_now') {
-            if (!price) {
-                return res.status(400).json({ message: 'Price is required for buy_now sale type' });
+            // --- VALIDASI HARGA > 0 ---
+            if (!price || parseFloat(price) <= 0) {
+                return res.status(400).json({ message: 'Harga harus diisi dan lebih besar dari 0' });
             }
             productData.price = parseFloat(price);
         } else if (saleType === 'auction') {
-            if (!startingPrice || !durationValue || !durationUnit || !bidIncrement) {
-                return res.status(400).json({ message: 'Starting price, duration value/unit, and bid increment are required for auction sale type' });
+            // --- VALIDASI HARGA > 0 ---
+            if (!startingPrice || parseFloat(startingPrice) <= 0) {
+                 return res.status(400).json({ message: 'Harga awal harus lebih besar dari 0' });
             }
+            if (!bidIncrement || parseFloat(bidIncrement) <= 0) {
+                 return res.status(400).json({ message: 'Kelipatan bid harus lebih besar dari 0' });
+            }
+            if (!durationValue || !durationUnit) {
+                return res.status(400).json({ message: 'Durasi lelang wajib diisi' });
+            }
+            // ---------------------------
             
             try {
                 const auctionEndTime = calculateEndTime(durationValue, durationUnit);
@@ -87,7 +119,7 @@ export const createProduct = async (req, res) => {
 
             productData.startingPrice = parseFloat(startingPrice);
             productData.bidIncrement = parseFloat(bidIncrement);
-            productData.status = 'available'; // Produk tetap available, tapi...
+            productData.status = 'available'; 
             productData.auctionStatus = 'running';
         } else {
             return res.status(400).json({ message: 'Invalid saleType' });
@@ -117,19 +149,29 @@ export const createProduct = async (req, res) => {
 
 export const getAllProducts = async (req, res) => {
     try {
-        // PERBAIKAN: Tambahkan 'condition', 'sortBy', dan 'sortOrder' ke dekonstruksi req.query
         const { saleType, categoryId, search, condition, sortBy, sortOrder } = req.query;
 
         let whereFilter = {
-            status: { notIn: ['sold', 'unavailable'] }
+            status: { notIn: ['sold', 'unavailable', 'cancelled_by_buyer'] }
         };
 
         // --- FILTERING ---
         if (saleType) {
             whereFilter.saleType = saleType;
+
+            // --- PERBAIKAN UTAMA DI SINI ---
+            // Jika yang diminta adalah halaman lelang (shop/auction)
+            if (saleType === 'auction') {
+                // 1. Hanya tampilkan lelang yang waktunya BELUM berakhir
+                whereFilter.endTime = {
+                    gt: new Date() // gt = greater than (lebih besar dari)
+                };
+                // 2. Dan pastikan status lelangnya 'running'
+                whereFilter.auctionStatus = 'running';
+            }
+            // --- AKHIR PERBAIKAN ---
         }
         
-        // LOGIKA BARU: Terapkan filter kondisi jika ada
         if (condition) { 
             whereFilter.condition = condition;
         }
@@ -153,18 +195,14 @@ export const getAllProducts = async (req, res) => {
         let orderByClause = { createdAt: 'desc' }; // Default sort
         
         if (sortBy === 'price' || sortBy === 'startingPrice') {
-            // Gunakan harga yang sesuai dengan tipe penjualan
             const field = saleType === 'auction' ? 'startingPrice' : 'price';
-            
-            // Default order adalah 'desc' (tertinggi ke terendah) jika tidak ada sortOrder
             const order = (sortOrder && sortOrder.toLowerCase() === 'asc') ? 'asc' : 'desc';
-            
             orderByClause = { [field]: order };
         } 
         
         const products = await prisma.product.findMany({
             where: whereFilter,
-            orderBy: orderByClause, // Terapkan sorting baru
+            orderBy: orderByClause, 
             include: {
                 images: true, 
                 categories: { include: { category: true } }, 
@@ -176,7 +214,6 @@ export const getAllProducts = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
-
 
 export const getProductById = async (req, res) => {
     try {
@@ -207,8 +244,6 @@ export const getProductById = async (req, res) => {
     }
 };
 
-
-// --- PERUBAHAN 1: getMyProducts ---
 export const getMyProducts = async (req, res) => {
   try {
     const sellerId = req.user.userId;
@@ -294,6 +329,22 @@ export const updateProduct = async (req, res) => {
         }
 
         const allowedUpdates = { ...productDataToUpdate };
+        
+        // --- VALIDASI NAMA & HARGA SAAT UPDATE ---
+        if (allowedUpdates.name) {
+            const nameRegex = /^[a-zA-Z0-9\s.,'-]+$/;
+            if (!nameRegex.test(allowedUpdates.name)) {
+                return res.status(400).json({ message: 'Nama produk hanya boleh berisi huruf, angka, dan spasi.' });
+            }
+        }
+        if (allowedUpdates.price && parseFloat(allowedUpdates.price) <= 0) {
+             return res.status(400).json({ message: 'Harga harus lebih besar dari 0.' });
+        }
+        if (allowedUpdates.startingPrice && parseFloat(allowedUpdates.startingPrice) <= 0) {
+             return res.status(400).json({ message: 'Harga awal harus lebih besar dari 0.' });
+        }
+        // ----------------------------------------
+
         delete allowedUpdates.id;
         delete allowedUpdates.sellerId;
         delete allowedUpdates.createdAt;
@@ -305,6 +356,21 @@ export const updateProduct = async (req, res) => {
         if (allowedUpdates.price) allowedUpdates.price = parseFloat(allowedUpdates.price);
         if (allowedUpdates.startingPrice) allowedUpdates.startingPrice = parseFloat(allowedUpdates.startingPrice);
         if (allowedUpdates.bidIncrement) allowedUpdates.bidIncrement = parseFloat(allowedUpdates.bidIncrement);
+
+        // --- PERUBAHAN: Menggabungkan usagePeriod saat UPDATE ---
+        if (allowedUpdates.usagePeriodValue && allowedUpdates.usagePeriodUnit) {
+            const periodVal = parseInt(allowedUpdates.usagePeriodValue);
+            if (!isNaN(periodVal) && periodVal > 0) {
+                allowedUpdates.usagePeriod = `${periodVal} ${allowedUpdates.usagePeriodUnit}`;
+            } else {
+                 allowedUpdates.usagePeriod = null; // Hapus jika valuenya 0 atau tidak valid
+            }
+        } else {
+            allowedUpdates.usagePeriod = null; // Hapus jika salah satu tidak diisi
+        }
+        delete allowedUpdates.usagePeriodValue;
+        delete allowedUpdates.usagePeriodUnit;
+        // ----------------------------------------------------
 
         if (allowedUpdates.categoryIds && Array.isArray(allowedUpdates.categoryIds) && allowedUpdates.categoryIds.length === 1) {
             const categoryId = parseInt(allowedUpdates.categoryIds[0]);
@@ -375,21 +441,41 @@ export const reAuctionProduct = async (req, res) => {
         if (!startingPrice || !bidIncrement || !durationValue || !durationUnit) {
             return res.status(400).json({ message: 'All new auction details are required.' });
         }
-        const product = await prisma.product.findFirst({ where: { id: parseInt(id), sellerId: sellerId } });
+        
+        // --- Ambil 'status' dan 'auctionStatus' ---
+        const product = await prisma.product.findFirst({ 
+            where: { id: parseInt(id), sellerId: sellerId },
+            select: { status: true, auctionStatus: true, endTime: true } // Ambil semua yang kita butuhkan
+        });
+
         if (!product) return res.status(404).json({ message: 'Product not found or you are not the owner.' });
         
-        // --- PERBAIKAN DI SINI ---
         const isTimeExpired = new Date() > new Date(product.endTime);
-        const canReAuction = product.status === 'cancelled_by_buyer' || isTimeExpired;
+        
+        // --- PERBAIKAN LOGIKA 'canReAuction' ---
+        // 1. Cek apakah dibatalkan oleh buyer
+        const isCancelledByBuyer = product.status === 'cancelled_by_buyer';
+        // 2. Cek apakah dibatalkan oleh seller (state yang kita atur)
+        const isCancelledBySeller = product.status === 'available' && product.auctionStatus === 'ended';
+        
+        // 3. Bisa lelang ulang jika salah satu dari 3 kondisi ini benar
+        const canReAuction = isCancelledByBuyer || isTimeExpired || isCancelledBySeller;
+        // ------------------------------------
 
         if (!canReAuction) {
-            return res.status(400).json({ message: 'Only auctions that have ended or been cancelled can be re-auctioned.' });
+            if (product.auctionStatus === 'running') {
+                return res.status(400).json({ message: 'Cannot re-auction a running auction. Please cancel it first.' });
+            }
+            // Pesan error yang lebih spesifik
+            return res.status(400).json({ message: `Cannot re-auction. Status: ${product.status}, AuctionStatus: ${product.auctionStatus}` });
         }
-        // --- AKHIR PERBAIKAN ---
         
         const newEndTime = calculateEndTime(durationValue, durationUnit);
         await prisma.$transaction(async (tx) => {
+            // Hapus bid lama
             await tx.bid.deleteMany({ where: { productId: parseInt(id) } });
+            
+            // Update produk ke state 'running' baru
             await tx.product.update({
                 where: { id: parseInt(id) },
                 data: {
@@ -409,3 +495,69 @@ export const reAuctionProduct = async (req, res) => {
         res.status(500).json({ message: 'Failed to re-auction the product.' });
     }
 };
+
+// --- FUNGSI cancelAuctionBySeller YANG DIPERBAIKI ---
+export const cancelAuctionBySeller = async (req, res) => {
+    try {
+        const { id } = req.params; // ID Produk
+        const sellerId = req.user.userId;
+
+        const product = await prisma.product.findFirst({
+            where: { id: parseInt(id), sellerId: sellerId },
+            // --- 2. Ambil 'name' untuk notifikasi ---
+            select: { id: true, sellerId: true, auctionStatus: true, name: true }
+        });
+
+        if (!product) {
+            return res.status(404).json({ message: 'Produk tidak ditemukan atau Anda bukan pemiliknya.' });
+        }
+
+        if (product.auctionStatus !== 'running') {
+             return res.status(400).json({ message: 'Hanya lelang yang sedang berjalan yang bisa dibatalkan.' });
+        }
+        
+        await prisma.$transaction(async (tx) => {
+            
+            // --- 3. Ambil semua bidder UNIK (sebelum bid dihapus, jika Anda menghapusnya) ---
+            // Kode Anda saat ini tidak menghapus bid, jadi ini aman.
+            const bids = await tx.bid.findMany({
+                where: { productId: parseInt(id) },
+                select: { userId: true },
+                distinct: ['userId'] // Hanya ambil user unik
+            });
+            const bidderIds = bids.map(b => b.userId);
+            // ----------------------------------------------------
+
+            await tx.product.update({
+                where: { id: parseInt(id) },
+                data: {
+                    status: 'available', 
+                    auctionStatus: 'ended',
+                    auctionWinnerId: null,
+                    reservedAt: null,
+                }
+            });
+            
+            // --- 4. KIRIM NOTIFIKASI KE SEMUA BIDDER ---
+            for (const bidderId of bidderIds) {
+                // Jangan kirim notif ke seller jika dia ikut bid (walaupun sudah dicegah)
+                if (bidderId !== sellerId) {
+                    await createNotification(
+                        bidderId,
+                        'auction_cancelled_seller',
+                        `Lelang untuk "${product.name}" telah dibatalkan oleh penjual.`,
+                        '/dashboard/my-bids'
+                    );
+                }
+            }
+            // -----------------------------------------
+        });
+
+        res.status(200).json({ message: 'Lelang berhasil dibatalkan.' });
+
+    } catch (error) {
+        console.error('Cancel auction error:', error);
+        res.status(500).json({ message: 'Gagal membatalkan lelang.' });
+    }
+};
+// --- AKHIR FUNGSI BARU ---

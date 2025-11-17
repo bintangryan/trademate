@@ -9,7 +9,8 @@ import {
   updateProduct,
   getMyProducts,
   deleteProduct,
-  reAuctionProduct // <-- Pastikan ini diimpor
+  reAuctionProduct,
+  cancelAuctionBySeller // <-- Pastikan ini diimpor
 } from '../controllers/productController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 
@@ -29,8 +30,8 @@ router.put('/:id', authMiddleware, updateProduct);
 // DELETE
 router.delete('/:id', authMiddleware, deleteProduct);
 
-// FUNGSI KHUSUS
-// Endpoint untuk melelang ulang produk
+// POST
 router.post('/:id/re-auction', authMiddleware, reAuctionProduct); // <-- Pastikan route ini ada
+router.post('/:id/cancel-auction', authMiddleware, cancelAuctionBySeller);
 
 export default router;

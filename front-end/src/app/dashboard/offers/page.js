@@ -113,9 +113,9 @@ export default function OffersPage() {
                 {products.map(product => {
                     const imageUrl = product.images?.[0]?.url || '/placeholder.svg';
                     return (
-                        <div key={product.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+                        <div key={product.id} className="rounded-lg shadow-md border border-gray-200 overflow-hidden">
                             {/* Header Kartu Produk */}
-                            <div className="p-4 flex gap-4 items-start bg-gray-50/70 border-b border-gray-100">
+                            <div className="p-4 flex gap-4 items-start bg-[var(--color-tawar-light)] border-b border-gray-100">
                                 <div className="flex-shrink-0 w-20 h-20 relative bg-gray-100 rounded-md overflow-hidden">
                                     <Image src={imageUrl} alt={product.name} fill sizes="80px" style={{ objectFit: 'cover' }}/>
                                 </div>
@@ -126,7 +126,7 @@ export default function OffersPage() {
                             </div>
 
                             {/* Daftar Tawaran untuk Produk Ini */}
-                            <div className="divide-y divide-gray-100">
+                            <div className="divide-y divide-gray-100 bg bg-white ">
                                 {product.offers.map(offer => {
                                     const isThisLoading = actionOfferId === offer.id;
                                     return (
@@ -155,7 +155,7 @@ export default function OffersPage() {
                                                             {isThisLoading ? <Loader2 className="animate-spin" size={14}/> : <X size={14}/>} Tolak
                                                         </button>
                                                         <button onClick={() => handleResponse(offer.id, 'counter')} disabled={isThisLoading} className="btn-action-sm bg-[var(--color-warning)] hover:bg-[var(--color-warning-dark)] disabled:bg-gray-400">
-                                                            {isThisLoading ? <Loader2 className="animate-spin" size={14}/> : <MessageSquare size={14}/>} Tawar Balik
+                                                            {isThisLoading ? <Loader2 className="animate-spin" size={14}/> : <RefreshCw size={14}/>} Tawar Balik
                                                         </button>
                                                         <button onClick={() => handleResponse(offer.id, 'accept')} disabled={isThisLoading} className="btn-action-sm bg-[var(--color-success)] hover:bg-[var(--color-success-dark)] disabled:bg-gray-400">
                                                             {isThisLoading ? <Loader2 className="animate-spin" size={14}/> : <Check size={14}/>} Terima

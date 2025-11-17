@@ -77,7 +77,6 @@ export default function MyOrdersPage() {
             <div className="container mx-auto p-4 sm:p-8">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
-                        <ListOrdered className="h-8 w-8 text-gray-500"/>
                         <h1 className="text-3xl font-bold text-gray-800">Riwayat Pesanan</h1>
                     </div>
                      <Link href="/dashboard/settings" className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-100 transition-colors">

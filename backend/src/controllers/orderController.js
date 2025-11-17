@@ -1,4 +1,8 @@
+// src/controllers/orderController.js
 import prisma from '../lib/prisma.js';
+// --- 1. Impor fungsi createNotification ---
+import { createNotification } from './notificationController.js';
+
 
 export const createOrder = async (req, res) => {
     try {
@@ -12,7 +16,12 @@ export const createOrder = async (req, res) => {
         const newOrder = await prisma.$transaction(async (tx) => {
             const selectedItems = await tx.cartItem.findMany({
                 where: { id: { in: itemIds.map(id => parseInt(id)) }, cart: { userId } },
-                include: { product: true }
+                // --- Ambil product.name dan sellerId untuk notif ---
+                include: { 
+                    product: {
+                        select: { id: true, name: true, sellerId: true, status: true, saleType: true, price: true }
+                    } 
+                }
             });
 
             if (selectedItems.length !== itemIds.length) {
@@ -21,12 +30,24 @@ export const createOrder = async (req, res) => {
 
             let totalAmount = 0;
             const productIdsToUpdate = [];
+            
+            // --- Siapkan Map untuk notif seller (per seller) ---
+            const sellerNotifMap = new Map();
+            // -------------------------------------------------
+            
             for (const item of selectedItems) {
                 if (item.product.status !== 'available' && item.product.status !== 'reserved') {
                     throw new Error(`Maaf, produk "${item.product.name}" sudah tidak tersedia.`);
                 }
                 totalAmount += parseFloat(item.agreedPrice);
                 productIdsToUpdate.push(item.productId);
+                
+                // --- Kumpulkan produk per sellerId ---
+                if (!sellerNotifMap.has(item.product.sellerId)) {
+                    sellerNotifMap.set(item.product.sellerId, []);
+                }
+                sellerNotifMap.get(item.product.sellerId).push(item.product.name);
+                // -------------------------------------
             }
 
             const createdOrder = await tx.order.create({
@@ -46,11 +67,9 @@ export const createOrder = async (req, res) => {
 
             await tx.product.updateMany({
                 where: { id: { in: productIdsToUpdate } },
-                data: { status: 'sold' },
+                data: { status: 'sold' }, // <-- Produk SOLD
             });
             
-            // --- PERBAIKAN DI SINI ---
-            // Tolak semua tawaran lain yang masih aktif untuk produk yang terjual
             await tx.offer.updateMany({
                 where: {
                     productId: { in: productIdsToUpdate },
@@ -58,11 +77,25 @@ export const createOrder = async (req, res) => {
                 },
                 data: { status: 'declined' }
             });
-            // --- AKHIR PERBAIKAN ---
 
             await tx.cartItem.deleteMany({
                 where: { productId: { in: productIdsToUpdate } },
             });
+            
+            // --- 2. KIRIM NOTIFIKASI KE SEMUA SELLER YANG TERLIBAT ---
+            for (const [sellerId, productNames] of sellerNotifMap.entries()) {
+                const message = productNames.length > 1
+                    ? `Produk Anda "${productNames[0]}" dan ${productNames.length - 1} lainnya telah terjual. Segera periksa pesanan !`
+                    : `Produk Anda "${productNames[0]}" telah terjual. Segera periksa pesanan !`;
+                    
+                await createNotification(
+                    sellerId,
+                    'product_sold',
+                    message,
+                    '/dashboard/sales'
+                );
+            }
+            // -----------------------------------
 
             return createdOrder;
         }, { maxWait: 10000, timeout: 15000 });
@@ -75,7 +108,7 @@ export const createOrder = async (req, res) => {
     }
 };
 
-
+// ... (getOrdersBySeller, getOrdersByBuyer tetap sama) ...
 export const getOrdersBySeller = async (req, res) => {
     try {
         const sellerId = req.user.userId;
@@ -94,13 +127,12 @@ export const getOrdersBySeller = async (req, res) => {
             where: { id: { in: orderIds } },
             orderBy: { createdAt: 'desc' },
             include: {
-                // Sertakan semua detail yang dibutuhkan
                 items: { 
                     include: { 
                         product: {
-                            include: { // Gunakan include untuk mengambil semua field + relasi
-                                images: { // Sertakan gambar
-                                    take: 1 // Ambil 1 gambar
+                            include: { 
+                                images: { 
+                                    take: 1
                                 }
                             } 
                         } 
@@ -128,13 +160,12 @@ export const getOrdersByBuyer = async (req, res) => {
             where: { buyerId: buyerId },
             orderBy: { createdAt: 'desc' },
             include: {
-                // Sertakan semua detail yang dibutuhkan
                 items: {
                     include: {
                         product: {
                             include: {
                                 images: {
-                                    take: 1 // Ambil 1 gambar untuk preview
+                                    take: 1
                                 },
                                 seller: {
                                     select: {
@@ -198,12 +229,15 @@ export const updateOrderStatus = async (req, res) => {
                 data: { status },
             });
         },
-        // --- PERBAIKAN DI SINI ---
         {
-          maxWait: 10000, // Waktu tunggu koneksi
-          timeout: 15000, // Waktu eksekusi transaksi
+          maxWait: 10000,
+          timeout: 15000,
         });
-        // --- AKHIR PERBAIKAN ---
+        
+        // (Opsional) TODO: Kirim notif ke buyer saat status diubah seller
+        // if (status === 'shipped') {
+        //    await createNotification(updatedOrder.buyerId, ...)
+        // }
 
         res.status(200).json({ message: `Order status updated to ${status}.`, order: updatedOrder });
 

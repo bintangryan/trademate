@@ -28,6 +28,7 @@ model User {
   offers        Offer[]
   orders        Order[]
   wishlist      Wishlist[]
+  notifications Notification[]
   
   @@map("users")
 }
@@ -128,6 +129,7 @@ model Wishlist {
   @@id([userId, productId])
   @@map("wishlists")
 }
+
 model Cart {
   id        Int       @id @default(autoincrement())
   userId    Int       @unique @map("user_id")
@@ -153,6 +155,7 @@ model CartItem {
   
   @@map("cart_items")
 }
+
 model Bid {
   id        Int      @id @default(autoincrement())
   productId Int      @map("product_id")
@@ -205,6 +208,22 @@ model OrderItem {
   product         Product  @relation(fields: [productId], references: [id])
 
   @@map("order_items")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  type      NotificationType
+  message   String
+  link      String
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relasi ke User
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
 }
 
 // ======================================
@@ -264,4 +283,18 @@ enum OrderStatus {
   completed
   cancelled
   @@map("order_status")
+}
+
+enum NotificationType {
+  offer_new
+  offer_accepted
+  offer_countered
+  offer_declined
+  bid_new
+  bid_outbid
+  product_sold
+  auction_won
+  auction_lost
+  auction_failed_buyer     // <-- TAMBAHKAN INI
+  auction_cancelled_seller // <-- TAMBAHKAN INI
 }

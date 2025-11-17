@@ -180,7 +180,7 @@ export default function SettingsPage() {
                                         <button type="button" onClick={handleCancel} className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
                                             <X size={16} /> Batal
                                         </button>
-                                        <button type="submit" disabled={isLoading} className="flex items-center gap-2 px-6 py-2.5 bg-[var(--color-lelang)] text-white font-semibold rounded-lg hover:bg-[var(--color-lelang-dark)] disabled:bg-gray-400 transition-colors">
+                                        <button type="submit" disabled={isLoading} className="flex items-center gap-2 px-6 py-2.5 bg-[var(--color-tawar)] text-white font-semibold rounded-lg hover:bg-[var(--color-tawar-dark)] disabled:bg-gray-400 transition-colors">
                                             <Save size={16} /> {isLoading ? 'Menyimpan...' : 'Simpan'}
                                         </button>
                                     </>

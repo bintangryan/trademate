@@ -1,4 +1,7 @@
+// src/controllers/auctionController.js
 import prisma from '../lib/prisma.js';
+// --- 1. Impor createNotification ---
+import { createNotification } from './notificationController.js';
 
 // FUNGSI BARU: Untuk halaman "Lelang Saya" di sisi pembeli
 export const getBuyerAuctions = async (req, res) => {
@@ -54,7 +57,7 @@ export const getBuyerAuctions = async (req, res) => {
 // FUNGSI BARU: Untuk memeriksa timeout (dipindahkan dari auctionFinalizer)
 export const checkReservedTimeout = async (req, res) => {
     try {
-        const TIMEOUT_MINUTES = 5; 
+        const TIMEOUT_MINUTES = 720; 
         const now = new Date();
         const cutoffTime = new Date(now.getTime() - (TIMEOUT_MINUTES * 60 * 1000));
         
@@ -67,7 +70,8 @@ export const checkReservedTimeout = async (req, res) => {
                     lt: cutoffTime
                 }
             },
-            select: { id: true, auctionWinnerId: true }
+            // --- 2. Ambil 'name' dan 'sellerId' ---
+            select: { id: true, auctionWinnerId: true, name: true, sellerId: true }
         });
 
         if (timedOutProducts.length === 0) {
@@ -92,12 +96,22 @@ export const checkReservedTimeout = async (req, res) => {
                 await tx.product.update({
                     where: { id: product.id },
                     data: {
-                        status: 'cancelled_by_buyer', // <-- PERUBAHAN UTAMA
-                        auctionStatus: 'ended',      // Status lelang tetap berakhir
+                        status: 'cancelled_by_buyer', 
+                        auctionStatus: 'ended',
                         reservedAt: null,
                         auctionWinnerId: null
                     }
                 });
+                
+                // --- 3. KIRIM NOTIFIKASI KE SELLER ---
+                await createNotification(
+                    product.sellerId,
+                    'auction_failed_buyer',
+                    `Pemenang lelang "${product.name}" kehabisan waktu checkout. Lelang ulang produk Anda !`,
+                    '/dashboard/auctions'
+                );
+                // ------------------------------------
+                
                 resetCount++;
             }
         });

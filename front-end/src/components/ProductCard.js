@@ -10,7 +10,7 @@ import { ShoppingBagIcon } from '@heroicons/react/24/solid';
 import WishlistButton from './WishlistButton';
 import { ShieldCheck, Clock, History, ShoppingCart, Loader2 } from 'lucide-react';
 
-// Komponen Timer Lelang (tidak berubah)
+// --- Komponen Timer Lelang (INI TETAP SAMA, SUDAH DENGAN BG MERAH) ---
 const AuctionTimer = ({ endTime }) => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isExpired, setIsExpired] = useState(false);
@@ -35,18 +35,27 @@ const AuctionTimer = ({ endTime }) => {
     return () => clearInterval(timer);
   }, [endTime]);
   const pad = (num) => String(num).padStart(2, '0');
+  
+  if (isExpired) {
+    return (
+        <div className="flex items-center text-sm font-semibold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg w-fit">
+            <Clock size={16} className="mr-2" />
+            <span>Lelang berakhir!</span>
+        </div>
+    );
+  }
+
   return (
-    <div className="flex items-center text-sm font-bold text-[var(--color-danger)]">
+    <div className="flex items-center text-sm font-bold text-red-700 bg-red-100 px-3 py-1.5 rounded-lg w-fit">
       <Clock size={16} className="mr-2" />
-      {isExpired ? ( <span>Lelang berakhir!</span> ) : (
-        <span className="font-mono tracking-tighter">
-            {timeLeft.days > 0 && `${timeLeft.days}h `}
-            {`${pad(timeLeft.hours)}:${pad(timeLeft.minutes)}:${pad(timeLeft.seconds)}`}
-        </span>
-      )}
+      <span className="font-mono tracking-tighter">
+          {timeLeft.days > 0 && `${timeLeft.days}h `}
+          {`${pad(timeLeft.hours)}:${pad(timeLeft.minutes)}:${pad(timeLeft.seconds)}`}
+      </span>
     </div>
   );
 };
+// --- AKHIR KOMPONEN TIMER ---
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
@@ -63,6 +72,14 @@ export default function ProductCard({ product }) {
   const imageUrl = product.images?.[0]?.url || '/placeholder.svg';
   const priceColor = isAuction ? 'text-[var(--color-lelang)]' : 'text-[var(--color-tawar)]';
   const infoColor = isAuction ? 'text-[var(--color-lelang)]' : 'text-[var(--color-tawar)]';
+
+  const isAuctionRunning = isAuction && 
+                           product.auctionStatus === 'running' && 
+                           product.status === 'available' && 
+                           product.endTime;
+                           
+  const isAuctionEnded = isAuction && 
+                         (product.auctionStatus === 'ended' || product.status === 'cancelled_by_buyer');
 
   const handleAddToCartClick = async (e) => {
       e.preventDefault();
@@ -117,13 +134,19 @@ export default function ProductCard({ product }) {
             </div>
         </div>
         
+        {/* --- PERBAIKAN UTAMA DI SINI --- */}
         <div className="mt-auto">
-            {isAuction && product.endTime && (
-                <div className="p-4 border-t border-gray-300">
-                    <AuctionTimer endTime={product.endTime} />
-                </div>
-            )}
-            <div className="flex justify-between items-stretch border-t border-gray-300">
+            {/* SECTION 1: Timestamp (DIHAPUS DARI SINI)
+              Kita tidak lagi merender timer di sini.
+            */}
+            
+            {/* SECTION 2: Harga & Aksi
+              Kita pindahkan timer ke dalam section ini.
+              Border-t sekarang diletakkan di sini secara permanen.
+            */}
+            <div className="flex justify-between items-center border-t border-gray-300">
+                
+                {/* 1. BAGIAN HARGA (Kiri) */}
                 <div className="p-4 flex items-center">
                     {isAuction ? (
                         <div>
@@ -135,9 +158,21 @@ export default function ProductCard({ product }) {
                     )}
                 </div>
 
-                {!isAuction && (
-                    // --- PERBAIKAN DI SINI ---
-                    // Hapus 'rounded-tl-lg' agar tidak ada sudut melengkung yang aneh
+                {/* 2. BAGIAN AKSI (Kanan) - Tampilkan Timer atau Tombol Add */}
+                {isAuction ? (
+                    // --- JIKA LELANG: Tampilkan Timestamp di sini ---
+                    <div className="p-4"> {/* Tambahkan padding agar sejajar */}
+                        {isAuctionRunning ? (
+                            <AuctionTimer endTime={product.endTime} />
+                        ) : isAuctionEnded ? (
+                            <div className="flex items-center text-sm font-semibold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg w-fit">
+                                <Clock size={16} className="mr-2" />
+                                <span>Lelang berakhir</span>
+                            </div>
+                        ) : null}
+                    </div>
+                ) : (
+                    // --- JIKA BUKAN LELANG: Tampilkan Tombol Add ---
                     <div className="flex items-center bg-[var(--color-tawar-light)]">
                         <button
                             onClick={handleAddToCartClick}
@@ -153,8 +188,10 @@ export default function ProductCard({ product }) {
                         </button>
                     </div>
                 )}
+
             </div>
         </div>
+        {/* --- AKHIR PERBAIKAN --- */}
       </Link>
     </div>
   );

@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Save, Info, Tag, DollarSign, Gavel, CheckSquare, Clock, UploadCloud, X as IconX, Image as ImageIcon, Loader2 } from 'lucide-react'; // <-- Impor Loader2
+import { ArrowLeft, Save, Info, Tag, DollarSign, Gavel, CheckSquare, Clock, UploadCloud, X as IconX, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 // Komponen Pratinjau Gambar (tidak berubah)
 const ImagePreviewItem = ({ previewUrl, onRemove }) => (
@@ -38,7 +38,10 @@ export default function NewProductPage() {
         durationUnit: 'days',
         bidIncrement: '',
         condition: '',
-        usagePeriod: '',
+        // --- PERUBAHAN STATE ---
+        usagePeriodValue: '',
+        usagePeriodUnit: 'hari', // Default
+        // -----------------------
         categoryIds: [],
     });
     const [imageFiles, setImageFiles] = useState([]);
@@ -60,10 +63,19 @@ export default function NewProductPage() {
         fetchCategories();
     }, []);
 
+    // --- PERUBAHAN: VALIDASI INPUT NAMA ---
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        
+        if (name === 'name') {
+            // Regex: Hanya izinkan huruf, angka, spasi, dan .,-'
+            const sanitizedValue = value.replace(/[^a-zA-Z0-9\s.,'-]/g, '');
+            setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
+    // ------------------------------------
     
     const handleCategoryChange = (e) => {
         setFormData(prev => ({ ...prev, categoryIds: [e.target.value] }));
@@ -108,6 +120,22 @@ export default function NewProductPage() {
             toast.error('Silakan upload setidaknya satu gambar produk.');
             return;
         }
+        
+        // --- VALIDASI TAMBAHAN SEBELUM KIRIM ---
+        if (formData.saleType === 'buy_now' && parseFloat(formData.price) <= 0) {
+             toast.error("Harga Jual harus lebih besar dari 0.");
+             return;
+        }
+        if (formData.saleType === 'auction' && parseFloat(formData.startingPrice) <= 0) {
+             toast.error("Harga Awal harus lebih besar dari 0.");
+             return;
+        }
+        if (formData.saleType === 'auction' && parseFloat(formData.bidIncrement) <= 0) {
+             toast.error("Kelipatan Bid harus lebih besar dari 0.");
+             return;
+        }
+        // ---------------------------------------
+
         setIsLoading(true);
 
         try {
@@ -126,14 +154,17 @@ export default function NewProductPage() {
             const uploadResults = await Promise.all(uploadPromises);
             const imageUrls = uploadResults.map(result => result.url);
 
-            // 2. Siapkan Data Produk
+            // 2. Siapkan Data Produk (dengan data usagePeriod baru)
              const productPayload = {
                  name: formData.name,
                  description: formData.description,
                  saleType: formData.saleType,
                  condition: formData.condition,
-                 usagePeriod: formData.usagePeriod,
-                 categoryIds: formData.categoryIds, // Pastikan ini array string ID
+                 // --- PERUBAHAN PAYLOAD ---
+                 usagePeriodValue: formData.usagePeriodValue || null,
+                 usagePeriodUnit: formData.usagePeriodUnit,
+                 // -------------------------
+                 categoryIds: formData.categoryIds, 
                  price: formData.saleType === 'buy_now' ? parseFloat(formData.price) : null,
                  startingPrice: formData.saleType === 'auction' ? parseFloat(formData.startingPrice) : null,
                  bidIncrement: formData.saleType === 'auction' ? parseFloat(formData.bidIncrement) : null,
@@ -200,11 +231,11 @@ export default function NewProductPage() {
                                 </div>
                             )}
                             {imageFiles.length < MAX_IMAGES && (
-                                <label htmlFor="file-upload" className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-blue-500 transition-colors bg-white">
+                                <label htmlFor="file-upload" className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-[var(--color-lelang-light)] transition-colors bg-white">
                                     <div className="space-y-1 text-center">
                                         <UploadCloud className="mx-auto h-12 w-12 text-gray-400" strokeWidth={1} />
                                         <div className="flex text-sm text-gray-600 justify-center">
-                                            <span className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                                            <span className="relative cursor-pointer bg-white rounded-md font-medium text-[var(--color-lelang-light)] hover:text-[var(--color-lelang)] focus-within:outline-none">
                                                 <span>Pilih file</span>
                                                 <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handleImageChange} accept="image/png, image/jpeg, image/jpg" multiple />
                                             </span>
@@ -221,24 +252,24 @@ export default function NewProductPage() {
                     </div>
 
                     <div className="md:col-span-2">
-                        <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md border border-gray-200 space-y-8">
+                        <div className="bg-[var(--color-tawar-light)] p-6 sm:p-8 rounded-lg shadow-md border border-[var(--color-tawar)] space-y-8">
                             <fieldset>
-                                <legend className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2"><Info size={18}/> Informasi Dasar</legend>
+                                <legend className="text-lg font-semibold text-[var(--color-lelang)] mb-4 flex items-center gap-2"><Info size={18}/> Informasi Dasar</legend>
                                 <div className="space-y-4">
                                     <div>
-                                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nama Produk *</label>
-                                        <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} className="mt-1 block w-full input-style" required />
+                                        <label htmlFor="name" className="block text-sm font-medium text-gray-800">Nama Produk *</label>
+                                        <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} className="mt-1 block w-full input-style-tawar" required />
+                                        <p className="text-xs text-gray-500 mt-1">Hanya huruf, angka, spasi, dan simbol</p>
                                     </div>
                                     <div>
-                                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">Deskripsi</label>
-                                        <textarea name="description" id="description" rows="4" value={formData.description} onChange={handleChange} className="mt-1 block w-full input-style" placeholder="Jelaskan kondisi, fitur, atau minus produk..."></textarea>
+                                        <label htmlFor="description" className="block text-sm font-medium text-gray-800">Deskripsi</label>
+                                        <textarea name="description" id="description" rows="4" value={formData.description} onChange={handleChange} className="mt-1 block w-full input-style-tawar" placeholder="Jelaskan kondisi, fitur, atau minus produk..."></textarea>
                                     </div>
                                     <div>
-                                        <label htmlFor="categoryIds" className="block text-sm font-medium text-gray-700">Kategori *</label>
+                                        <label htmlFor="categoryIds" className="block text-sm font-medium text-gray-800">Kategori *</label>
                                         <select
                                             name="categoryIds"
                                             id="categoryIds"
-                                            // --- PERBAIKAN DI SINI ---
                                             value={(formData.categoryIds && formData.categoryIds.length > 0) ? formData.categoryIds[0] : ''}
                                             onChange={handleCategoryChange}
                                             className="mt-1 block w-full input-style"
@@ -254,30 +285,31 @@ export default function NewProductPage() {
                             </fieldset>
 
                            <fieldset>
-                                <legend className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2"><Tag size={18}/> Tipe Penjualan & Harga</legend>
+                                <legend className="text-lg font-semibold text-[var(--color-lelang)] mb-4 flex items-center gap-2"><Tag size={18}/> Tipe Penjualan & Harga</legend>
                                 <div className="space-y-4">
                                     <div>
-                                        <label htmlFor="saleType" className="block text-sm font-medium text-gray-700">Tipe Penjualan</label>
-                                        <select name="saleType" id="saleType" value={formData.saleType} onChange={handleChange} className="mt-1 block w-full input-style">
+                                        <label htmlFor="saleType" className="block text-sm font-medium text-gray-800">Tipe Penjualan</label>
+                                        <select name="saleType" id="saleType" value={formData.saleType} onChange={handleChange} className="mt-1 block w-full input-style-tawar">
                                             <option value="buy_now">Beli Langsung</option>
                                             <option value="auction">Lelang</option>
                                         </select>
                                     </div>
                                     {isAuction ? (
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-gray-50/50">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border border-[var(--color-tawar)] rounded-md bg-[var(--color-tawar)]/30 bg">
                                             <div>
-                                                <label htmlFor="startingPrice" className="block text-xs font-medium text-gray-600">Harga Awal (Rp)*</label>
-                                                <input type="number" name="startingPrice" id="startingPrice" value={formData.startingPrice} onChange={handleChange} className="mt-1 block w-full input-style" required/>
+                                                <label htmlFor="startingPrice" className="block text-xs font-medium text-gray-800">Harga Awal (Rp)*</label>
+                                                {/* --- VALIDASI HARGA > 0 --- */}
+                                                <input type="number" name="startingPrice" id="startingPrice" value={formData.startingPrice} onChange={handleChange} className="mt-1 block w-full input-style-tawar" required min="1"/>
                                             </div>
                                             <div>
-                                                <label htmlFor="bidIncrement" className="block text-xs font-medium text-gray-600">Kelipatan Bid (Rp)*</label>
-                                                <input type="number" name="bidIncrement" id="bidIncrement" value={formData.bidIncrement} onChange={handleChange} className="mt-1 block w-full input-style" required/>
+                                                <label htmlFor="bidIncrement" className="block text-xs font-medium text-gray-800">Kelipatan Bid (Rp)*</label>
+                                                <input type="number" name="bidIncrement" id="bidIncrement" value={formData.bidIncrement} onChange={handleChange} className="mt-1 block w-full input-style-tawar" required min="1"/>
                                             </div>
                                             <div>
-                                                <label htmlFor="durationValue" className="block text-xs font-medium text-gray-600">Durasi Lelang *</label>
+                                                <label htmlFor="durationValue" className="block text-xs font-medium text-gray-800">Durasi Lelang *</label>
                                                 <div className="flex space-x-2">
-                                                    <input type="number" name="durationValue" id="durationValue" value={formData.durationValue} onChange={handleChange} className="mt-1 block w-full input-style" required min="1"/>
-                                                    <select name="durationUnit" value={formData.durationUnit} onChange={handleChange} className="mt-1 block w-full input-style">
+                                                    <input type="number" name="durationValue" id="durationValue" value={formData.durationValue} onChange={handleChange} className="mt-1 block w-full input-style-tawar" required min="1"/>
+                                                    <select name="durationUnit" value={formData.durationUnit} onChange={handleChange} className="mt-1 block w-full input-style-tawar">
                                                         <option value="days">Hari</option>
                                                         <option value="hours">Jam</option>
                                                         <option value="minutes">Menit</option>
@@ -287,36 +319,61 @@ export default function NewProductPage() {
                                         </div>
                                     ) : (
                                         <div>
-                                            <label htmlFor="price" className="block text-sm font-medium text-gray-700">Harga Jual (Rp)*</label>
-                                            <input type="number" name="price" id="price" value={formData.price} onChange={handleChange} className="mt-1 block w-full input-style" required />
+                                            <label htmlFor="price" className="block text-sm font-medium text-gray-800">Harga Jual (Rp)*</label>
+                                            {/* --- VALIDASI HARGA > 0 --- */}
+                                            <input type="number" name="price" id="price" value={formData.price} onChange={handleChange} className="mt-1 block w-full input-style-tawar" required min="1" />
                                         </div>
                                     )}
                                 </div>
                             </fieldset>
 
                             <fieldset>
-                                <legend className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2"><CheckSquare size={18}/> Kondisi & Pemakaian</legend>
+                                <legend className="text-lg font-semibold text-[var(--color-lelang)] mb-4 flex items-center gap-2"><CheckSquare size={18}/> Kondisi & Pemakaian</legend>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label htmlFor="condition" className="block text-sm font-medium text-gray-700">Kondisi *</label>
-                                        <select name="condition" id="condition" value={formData.condition} onChange={handleChange} className="mt-1 block w-full input-style" required >
+                                        <label htmlFor="condition" className="block text-sm font-medium text-gray-800">Kondisi *</label>
+                                        <select name="condition" id="condition" value={formData.condition} onChange={handleChange} className="mt-1 block w-full input-style-tawar" required >
                                             <option value="">Pilih Kondisi</option>
                                             <option value="like_new">Seperti Baru</option>
                                             <option value="good_condition">Kondisi Baik</option>
                                             <option value="minor_defects">Cacat Minor</option>
                                         </select>
                                     </div>
+                                    {/* --- PERUBAHAN: INPUT PERIODE PEMAKAIAN --- */}
                                     <div>
-                                        <label htmlFor="usagePeriod" className="block text-sm font-medium text-gray-700">Periode Pemakaian</label>
-                                        <input type="text" name="usagePeriod" id="usagePeriod" value={formData.usagePeriod} onChange={handleChange} className="mt-1 block w-full input-style" placeholder="Contoh: 3 bulan"/>
+                                        <label htmlFor="usagePeriodValue" className="block text-sm font-medium text-gray-800">Periode Pemakaian</label>
+                                        <div className="flex space-x-2 mt-1">
+                                            <input 
+                                                type="number" 
+                                                name="usagePeriodValue" 
+                                                id="usagePeriodValue"
+                                                value={formData.usagePeriodValue} 
+                                                onChange={handleChange} 
+                                                className="input-style-tawar w-1/2" 
+                                                placeholder="Contoh: 3"
+                                                min="0"
+                                            />
+                                            <select 
+                                                name="usagePeriodUnit" 
+                                                value={formData.usagePeriodUnit} 
+                                                onChange={handleChange} 
+                                                className="input-style-tawar w-1/2"
+                                            >
+                                                <option value="hari">Hari</option>
+                                                <option value="minggu">Minggu</option>
+                                                <option value="bulan">Bulan</option>
+                                                <option value="tahun">Tahun</option>
+                                            </select>
+                                        </div>
                                     </div>
+                                    {/* -------------------------------------- */}
                                 </div>
                             </fieldset>
 
                             <div className="flex justify-end pt-6 border-t border-gray-200">
-                                <button type="submit" disabled={isLoading} className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors">
+                                <button type="submit" disabled={isLoading} className="flex items-center gap-2 px-6 py-2.5 bg-[var(--color-lelang)] text-white font-semibold rounded-lg hover:bg-[var(--color-lelang-dark)] disabled:bg-gray-400 transition-colors">
                                     <Save size={16}/>
-                                    {isLoading ? 'Menyimpan...' : 'Simpan Produk'}
+                                    {isLoading ? 'Menyimpan...' : 'Upload Produk'}
                                 </button>
                             </div>
                         </div>

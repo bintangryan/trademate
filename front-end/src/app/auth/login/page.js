@@ -79,7 +79,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   // Styling: Full Border, Background Abu-abu Muda
-                  className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl bg-gray-50 focus:border-[var(--color-lelang)] focus:outline-none focus:ring-0 transition-colors placeholder:text-gray-500 text-gray-900"
+                  className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl bg-gray-50 focus:border-[var(--color-tawar)] focus:outline-none focus:ring-0 transition-colors placeholder:text-gray-500 text-gray-900"
                   placeholder="Email Address"
                   required
                 />

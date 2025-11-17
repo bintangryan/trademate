@@ -24,7 +24,7 @@ const AcquisitionInfo = ({ item }) => {
 
     if (isAuctionWinner) {
         return (
-            <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-bold rounded-full w-fit bg-[var(--color-lelang-light)] text-[var(--color-lelang-dark)]">
+            <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-bold rounded-full w-fit bg-[var(--color-lelang)] text-[var(--color-tawar-light)]">
                 <Gavel size={12} />
                 <span>Pemenang Lelang</span>
             </div>
@@ -148,7 +148,7 @@ export default function CartPage() {
                 const isReservedAuction = item.product.status === 'reserved' && item.product.saleType === 'auction';
                 let expiryTime;
                 if (isReservedAuction && item.product.reservedAt) {
-                    expiryTime = new Date(new Date(item.product.reservedAt).getTime() + 5 * 60 * 1000);
+                    expiryTime = new Date(new Date(item.product.reservedAt).getTime() + 720 * 60 * 1000);
                 }
                 const priceColor = item.product.saleType === 'auction' ? 'text-[var(--color-lelang)]' : 'text-[var(--color-tawar)]';
 

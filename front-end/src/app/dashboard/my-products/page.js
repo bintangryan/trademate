@@ -26,7 +26,10 @@ const SaleTypeBadge = ({ saleType }) => {
 // --- Komponen Kartu Produk untuk Dashboard Penjual ---
 function MyProductCard({ product, onDelete, isActionLoading }) {
   const imageUrl = product.images?.[0]?.url || '/placeholder.svg';
-  const isSold = product.status === 'sold';
+  
+  // --- PERUBAHAN LOGIKA DIMULAI DI SINI ---
+  const isSold = product.status === 'sold'; // Ini tetap sama
+  
   const formatRupiah = (price) => {
     if (price === null || price === undefined) return 'N/A'; // Tambahkan pengecekan null/undefined
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
@@ -50,7 +53,11 @@ function MyProductCard({ product, onDelete, isActionLoading }) {
         <span className={`absolute top-2 left-2 px-2 py-0.5 text-xs font-semibold rounded ${
             isSold ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
         } capitalize z-10`}>
-            {product.status.replace('_', ' ')}
+            
+            {/* INI ADALAH PERUBAHAN YANG ANDA MINTA */}
+            {isSold ? 'Terjual' : 'Tersedia'}
+            {/* ----------------------------------- */}
+
         </span>
       </div>
 
@@ -58,9 +65,7 @@ function MyProductCard({ product, onDelete, isActionLoading }) {
       <div className="p-4 flex-grow flex flex-col">
         <h2 className="text-lg font-semibold text-gray-800 mb-1 line-clamp-2">{product.name}</h2>
         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-3">
-          {/* --- PERBAIKAN DI SINI: Gunakan SaleTypeBadge --- */}
           <SaleTypeBadge saleType={product.saleType} />
-          {/* ------------------------------------------- */}
           {priceDisplay !== null && priceDisplay !== undefined && (
             <>
               <span className="text-gray-300">|</span>
@@ -102,8 +107,10 @@ function MyProductCard({ product, onDelete, isActionLoading }) {
     </div>
   );
 }
+// --- AKHIR DARI MyProductCard ---
 
-// --- Komponen Utama Halaman ---
+
+// --- Komponen Utama Halaman (Tidak berubah) ---
 export default function MyProductsPage() {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
@@ -173,7 +180,7 @@ export default function MyProductsPage() {
   const FilterButton = ({ filterKey, label, count }) => (
     <button
       onClick={() => setActiveFilter(filterKey)}
-      className={`w-full text-left px-4 py-2 rounded flex justify-between items-center transition-colors ${activeFilter === filterKey ? 'bg-[var(--color-lelang)] text-white' : 'hover:bg-gray-100 text-gray-700'}`}
+      className={`w-full text-left px-4 py-2 rounded flex justify-between items-center transition-colors ${activeFilter === filterKey ? 'bg-[var(--color-tawar)] text-white' : 'hover:bg-gray-100 text-gray-700'}`}
     >
       <span>{label}</span>
       {count !== undefined && count !== null && ( // Tambah pengecekan null
@@ -189,7 +196,7 @@ export default function MyProductsPage() {
           <div className='flex items-center gap-3'>
             <h1 className="text-3xl font-bold text-gray-800">Etalase Produk Saya</h1>
           </div>
-          <Link href="/dashboard/my-products/new" className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 bg-[var(--color-lelang)] text-white rounded-lg hover:bg-[var(--color-lelang-dark)] font-semibold transition-colors">
+          <Link href="/dashboard/my-products/new" className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 bg-[var(--color-tawar)] text-white rounded-lg hover:bg-[var(--color-tawar-dark)] font-semibold transition-colors">
               <PackagePlus size={18}/>
               Jual Barang Baru
           </Link>
