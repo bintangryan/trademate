@@ -1,4 +1,3 @@
-// src/server.js
 import express from 'express';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
@@ -7,7 +6,7 @@ import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import offerRoutes from './routes/offerRoutes.js';
 import bidRoutes from './routes/bidRoutes.js'; 
-import auctionRoutes from './routes/auctionRoutes.js';
+import auctionRoutes from './routes/auctionRoutes.js'; 
 import orderRoutes from './routes/orderRoutes.js';
 import assetRoutes from './routes/assetRoutes.js'; 
 import wishlistRoutes from './routes/wishlistRoutes.js';
@@ -19,17 +18,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3110;
 
-// --- PERBAIKAN CORS (Whitelist) DIMULAI DI SINI ---
-
-// Daftar URL yang diizinkan (lokal dan produksi)
 const whitelist = [
-  'http://localhost:3000',               // Untuk development Anda
-  'https://trademateweb.netlify.app'    // URL Netlify Anda
+  'http://localhost:3000',               
+  'https://trademateweb.netlify.app'    
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Izinkan 'origin' jika ada di whitelist ATAU jika 'origin' tidak ada (seperti request dari Postman/curl)
     if (whitelist.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {
@@ -38,10 +33,7 @@ const corsOptions = {
   }
 };
 
-// Ganti app.use(cors()); yang lama dengan ini:
 app.use(cors(corsOptions));
-
-// --- AKHIR PERBAIKAN CORS ---
 
 app.use(express.json());
 
