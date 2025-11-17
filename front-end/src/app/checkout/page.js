@@ -1,4 +1,10 @@
 // src/app/checkout/page.js
+
+// --- 1. Impor Suspense dari React ---
+import { Suspense } from 'react';
+
+// --- 2. Tambahkan 'use client' DI BAWAH Impor Suspense ---
+// Ini akan memisahkan Client Component dari Server Component
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -38,10 +44,11 @@ function SelectionCard({ icon, label, value, name, selectedValue, onChange, disa
     );
 }
 
-export default function CheckoutPage() {
+// --- 3. Ganti nama 'export default function CheckoutPage()' menjadi 'function CheckoutContent()' ---
+function CheckoutContent() {
     const { user } = useAuth();
     const router = useRouter();
-    const searchParams = useSearchParams();
+    const searchParams = useSearchParams(); // <-- Sekarang ini aman
     
     const [selectedItems, setSelectedItems] = useState([]);
     const [sellerAddress, setSellerAddress] = useState('');
@@ -51,8 +58,7 @@ export default function CheckoutPage() {
     const [shippingMethod, setShippingMethod] = useState('courier');
     const [paymentMethod, setPaymentMethod] = useState('bank_transfer');
 
-    // --- PERBAIKAN PADA useCallback ---
-    // Tambahkan dependency array yang benar
+    // ... (seluruh sisa logika Anda: fetchData, useEffect, handleCreateOrder, dll. TETAP SAMA) ...
     const fetchData = useCallback(async () => {
         if (!user) return;
         const itemIdsParam = searchParams.get('items');
@@ -90,7 +96,7 @@ export default function CheckoutPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [user, router, searchParams]); // <-- Dependency array yang benar
+    }, [user, router, searchParams]); 
 
     useEffect(() => {
         fetchData();
@@ -127,9 +133,6 @@ export default function CheckoutPage() {
         }
     };
 
-    // --- PERBAIKAN PADA useMemo ---
-    // Dependency array ini sudah benar, linter-nya yang keliru.
-    // Kode ini tidak perlu diubah, tapi saya sertakan untuk kelengkapan.
     const totalPrice = useMemo(() => {
         return selectedItems.reduce((total, item) => total + parseFloat(item.agreedPrice), 0);
     }, [selectedItems]);
@@ -138,7 +141,8 @@ export default function CheckoutPage() {
 
     if (isLoading) return <div className="p-8 text-center">Memuat...</div>;
 
-return (
+    // --- Seluruh JSX Anda (return (...)) tetap sama persis di sini ---
+    return (
         <div className="bg-gray-50 min-h-screen">
             <div className="container mx-auto p-4 sm:p-8">
                 <h1 className="text-3xl font-bold mb-8">Checkout</h1>
@@ -241,15 +245,12 @@ return (
     );
 }
 
-// Salin fungsi-fungsi handler yang tidak diubah agar kode tetap lengkap
-const tempFetchData = async () => {};
-const tempHandleCreateOrder = async () => {};
-
-Object.assign(CheckoutPage, {
-  defaultProps: {
-    fetchData: tempFetchData,
-    handleCreateOrder: tempHandleCreateOrder,
-    totalPrice: 0,
-    formatRupiah: () => ''
-  }
-});
+// --- 4. Tambahkan 'export default' BARU di bagian bawah ---
+// Ini adalah Server Component yang "membungkus" Client Component Anda
+export default function CheckoutPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center">Memuat checkout...</div>}>
+            <CheckoutContent />
+        </Suspense>
+    )
+}
