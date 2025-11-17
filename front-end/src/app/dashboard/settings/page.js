@@ -40,7 +40,7 @@ export default function SettingsPage() {
         try {
             const token = localStorage.getItem('token');
             // --- PERBAIKAN DI SINI: Ganti URL ---
-            const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/me', { // <-- URL diubah ke '/me'
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me', { // <-- URL diubah ke '/me`
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             // --- AKHIR PERBAIKAN ---
@@ -76,7 +76,7 @@ export default function SettingsPage() {
         try {
             const token = localStorage.getItem('token');
             // URL untuk PUT sudah benar, tidak perlu diubah
-            const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/profile', { 
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/profile`, { 
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(formData),

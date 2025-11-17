@@ -41,7 +41,7 @@ export default function ProductFilters({ initialFilters = {} }) {    // 3. Inisi
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/assets/categories');
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/assets/categories`);
                 const data = await res.json();
                 setCategories(data.categories || []);
             } catch (error) {

@@ -23,7 +23,7 @@ export const NotificationProvider = ({ children }) => {
         setIsLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/notifications', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
                 headers: { 'Authorization': `Bearer ${token}` },
                 cache: 'no-store', // Selalu ambil data notifikasi terbaru
             });
@@ -82,7 +82,7 @@ export const NotificationProvider = ({ children }) => {
         // Panggil API di background
         try {
             const token = localStorage.getItem('token');
-            await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/notifications/read-all', {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/read-all`, {
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}` },
             });

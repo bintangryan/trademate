@@ -36,7 +36,7 @@ async function fetchBuyNowProducts(searchParams) {
     params.append('sortOrder', sortOrder);
 
     try {
-        const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/products?' + params.toString(), {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products?` + params.toString(), {
             cache: 'no-store',
         });
         if (!res.ok) throw new Error('Gagal mengambil data beli langsung');

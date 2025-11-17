@@ -238,7 +238,7 @@ export default function EditProductPage() {
              const uploadPromises = newImageFiles.map(file => {
                  const imageUploadData = new FormData();
                  imageUploadData.append('image', file);
-                 return fetch('${process.env.NEXT_PUBLIC_API_URL}/api/assets/upload', {
+                 return fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/assets/upload`, {
                      method: 'POST',
                      headers: { 'Authorization': `Bearer ${token}` },
                      body: imageUploadData,

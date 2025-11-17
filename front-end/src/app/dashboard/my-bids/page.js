@@ -59,7 +59,7 @@ export default function MyBidsPage() {
         setIsLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/auctions/my-bids', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auctions/my-bids`, {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             const data = await res.json();
@@ -86,7 +86,7 @@ export default function MyBidsPage() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/bids', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bids`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ productId: selectedAuction.id, amount: bidAmount }),

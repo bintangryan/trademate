@@ -56,7 +56,7 @@ export default function ProductInteraction({ product, initialBids = [] }) {
             throw new Error('Silakan login untuk menawar harga.');
         }
         const token = localStorage.getItem('token');
-        const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/offers', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/offers`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ productId: product.id, offerPrice }),
@@ -80,7 +80,7 @@ export default function ProductInteraction({ product, initialBids = [] }) {
             throw new Error('Silakan login untuk ikut lelang.');
         }
         const token = localStorage.getItem('token');
-        const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/bids', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bids`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ productId: product.id, amount: bidAmount }),

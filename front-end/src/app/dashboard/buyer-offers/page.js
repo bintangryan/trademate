@@ -39,7 +39,7 @@ export default function MyOffersPage() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/offers/buyer', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/offers/buyer`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Gagal memuat tawaran.');
