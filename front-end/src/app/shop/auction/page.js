@@ -35,7 +35,7 @@ async function fetchAuctionProducts(searchParams) {
     params.append('sortOrder', sortOrder);
 
     try {
-        const res = await fetch('http://localhost:3110/api/products?' + params.toString(), {
+        const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/products?' + params.toString(), {
             cache: 'no-store', // Data lelang harus selalu fresh
         });
         if (!res.ok) throw new Error('Gagal mengambil data lelang');

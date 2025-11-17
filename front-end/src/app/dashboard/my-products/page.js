@@ -137,7 +137,7 @@ export default function MyProductsPage() {
           params.append('status_ne', 'sold'); 
       }
 
-      const url = `http://localhost:3110/api/products/my-products?${params.toString()}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/products/my-products?${params.toString()}`;
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
       if (!res.ok) throw new Error('Gagal memuat produk.');
       
@@ -163,7 +163,7 @@ export default function MyProductsPage() {
     setActionProductId(productId);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3110/api/products/${productId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${productId}`, {
         method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` },
       });
       const data = await response.json();

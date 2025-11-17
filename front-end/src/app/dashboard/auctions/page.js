@@ -182,7 +182,7 @@ export default function AuctionManagementPage() {
         setIsLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3110/api/products/my-products?saleType=auction`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/my-products?saleType=auction`, {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             const data = await res.json();
@@ -224,7 +224,7 @@ export default function AuctionManagementPage() {
         setActionProductId(productId);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:3110/api/bids/${productId}/finalize`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bids/${productId}/finalize`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
             });
@@ -247,7 +247,7 @@ export default function AuctionManagementPage() {
         setActionProductId(productId);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:3110/api/products/${productId}/cancel-auction`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${productId}/cancel-auction`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
             });

@@ -20,7 +20,7 @@ import {ChevronRight} from 'lucide-react';
 // 5. Buat fungsi fetch data terpisah
 async function getProduct(id) {
     try {
-        const res = await fetch(`http://localhost:3110/api/products/${id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`, {
             cache: 'no-store', // Data produk harus selalu fresh
         });
         

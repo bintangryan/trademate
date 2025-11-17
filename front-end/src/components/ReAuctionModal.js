@@ -29,7 +29,7 @@ export default function ReAuctionModal({ product, onClose, onAuctionRestarted })
         setErrorMessage('');
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3110/api/products/${product.id}/re-auction`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${product.id}/re-auction`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 // Pastikan data dikirim sebagai angka

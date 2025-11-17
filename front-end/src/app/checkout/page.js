@@ -65,7 +65,7 @@ export default function CheckoutPage() {
 
         const token = localStorage.getItem('token');
         try {
-            const cartRes = await fetch('http://localhost:3110/api/cart', {
+            const cartRes = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/cart', {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             const cartData = await cartRes.json();
@@ -78,7 +78,7 @@ export default function CheckoutPage() {
             setSelectedItems(itemsToCheckout);
 
             const firstProductId = itemsToCheckout[0].productId;
-            const productRes = await fetch(`http://localhost:3110/api/products/${firstProductId}`);
+            const productRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${firstProductId}`);
             if(!productRes.ok) throw new Error('Gagal mengambil detail produk.');
             
             const productData = await productRes.json();
@@ -111,7 +111,7 @@ export default function CheckoutPage() {
         try {
             const token = localStorage.getItem('token');
             const itemIds = selectedItems.map(item => item.id);
-            const response = await fetch('http://localhost:3110/api/orders', {
+            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ itemIds, shippingMethod, paymentMethod }),

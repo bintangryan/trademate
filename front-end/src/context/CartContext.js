@@ -21,7 +21,7 @@ export const CartProvider = ({ children }) => {
         setIsLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:3110/api/cart', {
+            const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/cart', {
                 headers: { 'Authorization': `Bearer ${token}` },
                 cache: 'no-store', // Selalu ambil data cart terbaru
             });
@@ -47,7 +47,7 @@ export const CartProvider = ({ children }) => {
         }
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3110/api/cart/add', {
+            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/cart/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ productId, agreedPrice }),
@@ -69,7 +69,7 @@ export const CartProvider = ({ children }) => {
         setCartItems(prev => prev.filter(item => item.id !== itemId));
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:3110/api/cart/items/${itemId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cart/items/${itemId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` },
             });

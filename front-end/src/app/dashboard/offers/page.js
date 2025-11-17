@@ -47,7 +47,7 @@ export default function OffersPage() {
     setActionOfferId(null); // Reset loading state
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3110/api/offers/seller', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/offers/seller', {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Gagal memuat tawaran.');
@@ -80,7 +80,7 @@ export default function OffersPage() {
     setActionOfferId(offerId); // Mulai loading untuk tawaran ini
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3110/api/offers/${offerId}/seller-response`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/offers/${offerId}/seller-response`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ action, counterPrice }),

@@ -55,13 +55,13 @@ export default function EditProductPage() {
             setIsLoading(true);
             const token = localStorage.getItem('token');
 
-            const productRes = await fetch(`http://localhost:3110/api/products/${params.id}`, {
+            const productRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${params.id}`, {
                  headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!productRes.ok) throw new Error('Produk tidak ditemukan atau Anda tidak berhak mengaksesnya.');
             const productData = await productRes.json();
 
-            const categoriesRes = await fetch(`http://localhost:3110/api/assets/categories`);
+            const categoriesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/assets/categories`);
             const categoriesData = await categoriesRes.json();
 
             // --- PERUBAHAN: Parsing usagePeriod ---
@@ -166,7 +166,7 @@ export default function EditProductPage() {
     setDeletingImageId(imageId);
     try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:3110/api/assets/images/${imageId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/assets/images/${imageId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -224,7 +224,7 @@ export default function EditProductPage() {
              startingPrice: formData.saleType === 'auction' ? parseFloat(formData.startingPrice) : null,
              bidIncrement: formData.saleType === 'auction' ? parseFloat(formData.bidIncrement) : null,
          };
-        const productRes = await fetch(`http://localhost:3110/api/products/${params.id}`, {
+        const productRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${params.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(productUpdateData),
@@ -238,7 +238,7 @@ export default function EditProductPage() {
              const uploadPromises = newImageFiles.map(file => {
                  const imageUploadData = new FormData();
                  imageUploadData.append('image', file);
-                 return fetch('http://localhost:3110/api/assets/upload', {
+                 return fetch('${process.env.NEXT_PUBLIC_API_URL}/api/assets/upload', {
                      method: 'POST',
                      headers: { 'Authorization': `Bearer ${token}` },
                      body: imageUploadData,
@@ -248,7 +248,7 @@ export default function EditProductPage() {
              const imageUrls = uploadResults.map(result => result.url);
 
              const linkPromises = imageUrls.map(url => {
-                  return fetch(`http://localhost:3110/api/assets/products/${params.id}/images`, {
+                  return fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/assets/products/${params.id}/images`, {
                      method: 'POST',
                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                      body: JSON.stringify({ url }),

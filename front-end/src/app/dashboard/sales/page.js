@@ -52,7 +52,7 @@ export default function SalesManagementPage() {
         setIsLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:3110/api/orders/seller', {
+            const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/orders/seller', {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             const data = await res.json();
@@ -75,7 +75,7 @@ export default function SalesManagementPage() {
         setUpdatingOrderId(orderId); // Mulai loading
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3110/api/orders/${orderId}/status`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ status: newStatus }),

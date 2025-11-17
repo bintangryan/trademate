@@ -22,7 +22,7 @@ export const WishlistProvider = ({ children }) => {
         setIsLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:3110/api/wishlist', {
+            const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/wishlist', {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             const data = await res.json();
@@ -60,7 +60,7 @@ export const WishlistProvider = ({ children }) => {
 
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:3110/api/wishlist', {
+            const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/wishlist', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ productId }),
@@ -93,7 +93,7 @@ export const WishlistProvider = ({ children }) => {
         // 2. Lakukan panggilan API
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:3110/api/wishlist/${productId}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/wishlist/${productId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` },
             });

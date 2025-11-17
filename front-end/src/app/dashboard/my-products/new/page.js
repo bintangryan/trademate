@@ -53,7 +53,7 @@ export default function NewProductPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const res = await fetch('http://localhost:3110/api/assets/categories');
+                const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/assets/categories');
                 const data = await res.json();
                 setAllCategories(data.categories || []);
             } catch (error) {
@@ -145,7 +145,7 @@ export default function NewProductPage() {
             const uploadPromises = imageFiles.map(file => {
                 const formData = new FormData();
                 formData.append('image', file);
-                return fetch('http://localhost:3110/api/assets/upload', {
+                return fetch('${process.env.NEXT_PUBLIC_API_URL}/api/assets/upload', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData,
@@ -174,7 +174,7 @@ export default function NewProductPage() {
 
 
             // 3. Buat Produk
-            const productRes = await fetch('http://localhost:3110/api/products', {
+            const productRes = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/products', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(productPayload),
@@ -185,7 +185,7 @@ export default function NewProductPage() {
 
             // 4. Tautkan Gambar (di-parallelize)
             const linkPromises = imageUrls.map(url => {
-                 return fetch(`http://localhost:3110/api/assets/products/${productId}/images`, {
+                 return fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/assets/products/${productId}/images`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ url }),
