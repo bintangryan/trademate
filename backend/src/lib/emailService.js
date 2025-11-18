@@ -1,26 +1,12 @@
-// src/lib/emailService.js
-import * as Brevo from '@getbrevo/brevo';
+import brevo from "@getbrevo/brevo";
 
-// --- INI BAGIAN PERBAIKANNYA ---
+// Instance Transactional Email API
+const apiInstance = new brevo.TransactionalEmailsApi();
 
-// 1. Dapatkan 'ApiClient' default (singleton)
-const defaultClient = Brevo.ApiClient.instance;
-
-// 2. Konfigurasi autentikasi 'api-key' pada default client
-// Pastikan variabel 'BREVO_API_KEY' sudah Anda set di Environment Variables Render
-const apiKey = defaultClient.authentications['api-key'];
-apiKey.apiKey = process.env.BREVO_API_KEY;
-
-// 3. SEKARANG baru buat instance-nya
-const apiInstance = new Brevo.TransactionalEmailsApi();
-
-// --- AKHIR PERBAIKAN ---
-
-// 4. Buat objek email (ini sudah benar dari sebelumnya)
-const sendSmtpEmail = new Brevo.SendSmtpEmail();
+// SET API KEY (format SDK baru)
+apiInstance.authentications["apiKey"].apiKey = process.env.BREVO_API_KEY;
 
 export const sendVerificationEmail = async (toEmail, token) => {
-  
   const verificationLink = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify/${token}`;
 
   const htmlContent = `
@@ -33,25 +19,24 @@ export const sendVerificationEmail = async (toEmail, token) => {
   `;
 
   try {
-    // 5. Konfigurasi detail email
-    sendSmtpEmail.to = [{ email: toEmail }]; // Penerima (bisa siapa saja)
-    sendSmtpEmail.subject = 'Verifikasi Akun Trademate Anda';
-    sendSmtpEmail.htmlContent = htmlContent;
-    
-    // PENTING: 'sender' HARUS SAMA PERSIS dengan yang Anda verifikasi di Brevo
-    sendSmtpEmail.sender = { 
-      email: 'noreply.trademate@gmail.com', // Ganti jika Anda memverifikasi email lain
-      name: 'Trademate' 
+    // Buat object email setiap request
+    const email = new brevo.SendSmtpEmail();
+
+    email.sender = {
+      name: "Trademate",
+      email: "trademate.verify@gmail.com",
     };
 
-    // 6. Kirim email
-    await apiInstance.sendTransacEmail(sendSmtpEmail);
-    
-    console.log('Verification email sent to:', toEmail);
-  
-  } catch (error) {
-    // Jika 'BREVO_API_KEY' Anda salah, error-nya akan tertangkap di sini
-    console.error('Error sending email via Brevo:', error);
-    throw new Error('Failed to send verification email');
+    email.to = [{ email: toEmail }];
+    email.subject = "Verifikasi Akun Trademate Anda";
+    email.htmlContent = htmlContent;
+
+    await apiInstance.sendTransacEmail(email);
+
+    console.log("Verification email sent to:", toEmail);
+
+  } catch (err) {
+    console.error("Brevo Email Error:", err);
+    throw new Error("Failed to send verification email");
   }
 };
