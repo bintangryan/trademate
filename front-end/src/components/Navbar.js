@@ -7,12 +7,36 @@ import { useCart } from '@/context/CartContext';
 import Image from 'next/image';
 import { useNotification } from '@/context/NotificationContext'; 
 import { useRouter, usePathname } from 'next/navigation'; 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   User, Heart, Gavel, Settings, Package, DollarSign, LogOut, 
   TrendingUp, Tag, ListOrdered, Store, ShoppingCart,
-  Bell, ShoppingBag, Handbag
+  Bell
 } from 'lucide-react';
+
+// --- Komponen Avatar Pengguna ---
+const UserAvatar = ({ name }) => {
+    const getInitials = (name) => {
+        if (!name) return <User size={18} />;
+        const names = name.split(' ');
+        if (names.length > 1) {
+            return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    };
+
+    return (
+        <div 
+            className="w-8 h-8 rounded-full bg-[var(--color-lelang)] text-white 
+                       flex items-center justify-center text-xs font-semibold 
+                       border-2 border-white/50"
+        >
+            {getInitials(name)}
+        </div>
+    );
+};
+// ------------------------------------
+
 
 const MenuItem = ({ href, children, icon: Icon }) => (
   <Link 
@@ -30,21 +54,39 @@ export default function Navbar() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotification();
   const router = useRouter();
   const pathname = usePathname(); 
+  
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [animateNotif, setAnimateNotif] = useState(false);
+  const [animateCart, setAnimateCart] = useState(false);
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = () => {
     logout();
     router.push('/auth/login');
   };
 
-  const getNavLinkClasses = (href, options = { withUnderline: true }) => {
+  const getNavLinkClasses = (href) => {
     const isActive = pathname === href || (pathname.startsWith(href) && href !== '/');
-    let classes = "transition-colors flex items-center font-semibold relative py-1";
-    if (options.withUnderline) classes += " nav-link";
+    let classes = "transition-colors flex items-center font-semibold relative py-1 nav-link";
+    
+    // Gunakan text-gray-800 sebagai warna dasar (non-aktif)
     classes += " text-[var(--color-lelang)]";
+    
+    // --- PERUBAHAN DI SINI ---
+    // Ganti 'tawar' menjadi 'lelang' untuk state aktif dan hover
     if (isActive) classes += " text-[var(--color-tawar)] active"; 
     else classes += " hover:text-[var(--color-tawar)]";
+    // --- AKHIR PERUBAHAN ---
+
     return classes;
   };
 
@@ -53,11 +95,18 @@ export default function Navbar() {
     setIsNotifOpen(false);
     router.push(notification.link);
   };
-
-  const isCartActive = pathname === '/cart' || pathname.startsWith('/checkout');
+  
+  const isCartActive = pathname.startsWith('/cart') || pathname.startsWith('/checkout');
 
   return (
-    <nav className="bg-white shadow-lg sticky top-0 z-40 border-b border-gray-100">
+    <nav 
+        className={`sticky top-0 z-40 transition-all duration-300 
+            ${isScrolled 
+                ? 'bg-white/90 backdrop-blur-lg shadow-sm border-b border-gray-200' 
+                : 'bg-white'
+            }`
+        }
+    >
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
 
         {/* LOGO & NAVIGATION */}
@@ -85,37 +134,38 @@ export default function Navbar() {
         </div>
 
         {/* ALL ICONS (BELL, CART, USER) IN ONE FLEX */}
-        <div className="flex items-center space-x-2 sm:space-x-6">
+        <div className="flex items-center space-x-2 sm:space-x-4">
 
           {/* NOTIFICATION ICON */}
           {user && (
             <div className="relative">
               <button
                 onClick={() => {
+                  setAnimateNotif(true);
                   setIsNotifOpen(!isNotifOpen);
                   setIsDropdownOpen(false);
                 }}
-                // --- PERBAIKAN 1: Logika className diubah ---
-                className={`relative p-2 rounded-full transition-colors ${
-                  isNotifOpen ? '' : 'hover:bg-[var(--color-tawar-light)]'
-                }`}
-                // --- AKHIR PERBAIKAN 1 ---
+                onAnimationEnd={() => setAnimateNotif(false)}
+                className={`relative p-2 rounded-full transition-all duration-200 hover:text-[var(--color-tawar)] hover:scale-115
+                  ${isNotifOpen ? 'text-[var(--color-tawar)]' : 'text-[var(--color-lelang)]'}
+                  ${animateNotif ? 'animate-jump' : ''}
+                `}
                 aria-label="Notifikasi"
               >
                 <Bell 
                   size={24} 
-                  className={`text-[var(--color-lelang)] transition-all ${
-                    isNotifOpen ? 'fill-[var(--color-lelang)]' : 'fill-none'
+                  className={`transition-all ${
+                    isNotifOpen ? 'fill-[var(--color-tawar)]' : 'fill-none'
                   }`} 
                 />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-danger)] text-xs font-bold text-white">
+                  <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[var(--color-danger)] text-[10px] font-bold text-white">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </button>
 
-              {/* Dropdown Notifikasi (Tidak berubah) */}
+              {/* Dropdown Notifikasi */}
               {isNotifOpen && (
                 <div 
                   className="absolute right-0 mt-3 w-80 max-h-[80vh] overflow-y-auto bg-white rounded-xl shadow-2xl z-20 border border-gray-200" 
@@ -126,7 +176,8 @@ export default function Navbar() {
                         {unreadCount > 0 && (
                             <button 
                                 onClick={markAllAsRead} 
-                                className="text-xs font-medium text-[var(--color-lelang)] hover:underline"
+                                // --- PERUBAHAN DI SINI ---
+                                className="text-xs font-medium text-[var(--color-tawar)] hover:text-[var(--color-tawar-dark)] hover:underline"
                             >
                                 Tandai semua dibaca
                             </button>
@@ -137,17 +188,20 @@ export default function Navbar() {
                             <button
                                 key={notif.id}
                                 onClick={() => handleNotifClick(notif)}
-                                className="w-full text-left p-4 hover:bg-gray-50 transition-colors"
+                                // --- PERUBAHAN DI SINI ---
+                                className="w-full text-left p-4 hover:bg-[var(--color-tawar-light)] transition-colors"
                             >
                                 <div className="flex items-start gap-3">
                                     {!notif.isRead && (
-                                        <div className="w-2.5 h-2.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0" aria-label="Belum dibaca"></div>
+                                        // --- PERUBAHAN DI SINI ---
+                                        <div className="w-2.5 h-2.5 bg-[var(--color-tawar)] rounded-full mt-1.5 flex-shrink-0" aria-label="Belum dibaca"></div>
                                     )}
                                     <p className={`text-sm ${notif.isRead ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
                                         {notif.message}
                                     </p>
                                 </div>
-                                <p className={`text-xs mt-1 ${notif.isRead ? 'text-gray-400' : 'text-blue-600 font-medium'} ${!notif.isRead && 'ml-[17px]'}`}>
+                                {/* --- PERUBAHAN DI SINI --- */}
+                                <p className={`text-xs mt-1 ${notif.isRead ? 'text-gray-400' : 'text-[var(--color-tawar)] font-medium'} ${!notif.isRead && 'ml-[17px]'}`}>
                                     {new Date(notif.createdAt).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                 </p>
                             </button>
@@ -164,28 +218,29 @@ export default function Navbar() {
 
           {/* CART ICON */}
           <Link 
-            href="/cart" 
-            // --- PERBAIKAN 2: Logika className diubah ---
-            className={`relative p-2 rounded-full transition-colors ${
-              isCartActive ? '' : 'hover:bg-[var(--color-tawar-light)]'
-            }`}
-            // --- AKHIR PERBAIKAN 2 ---
+            href="/cart"
+            onClick={() => setAnimateCart(true)}
+            onAnimationEnd={() => setAnimateCart(false)}
+            className={`relative p-2 rounded-full transition-all duration-200 hover:text-[var(--color-tawar)] hover:scale-115
+              ${isCartActive ? 'text-[var(--color-tawar)]' : 'text-[var(--color-lelang)]'}
+              ${animateCart ? 'animate-jump' : ''}
+            `}
             aria-label="Keranjang"
           >
             <ShoppingCart 
               size={24} 
-              className={`text-[var(--color-lelang)] transition-all ${
-                isCartActive ? 'fill-[var(--color-lelang)]' : 'fill-none'
+              className={`transition-all ${
+                isCartActive ? 'fill-[var(--color-tawar)]' : 'fill-none'
               }`}
             />
             {user && cartItemCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-warning)] text-xs font-bold text-white">
+              <span className="absolute -top-0.5 -right-0.5 flex h3.5 w-3.5 items-center justify-center rounded-full bg-[var(--color-warning)] text-[10px] font-bold text-white">
                 {cartItemCount}
               </span>
             )}
           </Link>
 
-          {/* USER ICON (Tidak berubah) */}
+          {/* USER ICON */}
           {user ? (
             <div className="relative">
               <button
@@ -193,16 +248,15 @@ export default function Navbar() {
                   setIsDropdownOpen(!isDropdownOpen);
                   setIsNotifOpen(false);
                 }}
-                className="flex items-center space-x-2 bg-[var(--color-tawar-light)] text-[var(--color-lelang)] hover:text-white p-2 rounded-full hover:bg-[var(--color-lelang)] border-2 border-transparent hover:border-[var(--color-lelang)] focus:outline-none transition-all duration-200"
+                className={`flex items-center space-x-2 rounded-full transition-all duration-200 p-1.5
+                  hover:scale-115
+                `}
                 aria-expanded={isDropdownOpen}
               >
-                <User size={18} />
-                <span className="font-semibold text-sm pr-1 hidden sm:block">
-                  Hi, {user.fullName || user.email.split('@')[0]}
-                </span>
+                <UserAvatar name={user.fullName} />
               </button>
 
-              {/* Dropdown user (Tidak berubah) */}
+              {/* Dropdown user */}
               {isDropdownOpen && (
                 <div 
                   className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl z-20 border border-gray-200 overflow-hidden p-2"
@@ -240,6 +294,7 @@ export default function Navbar() {
                       <span className="font-medium">Logout</span>
                     </button>
                   </div>
+                  
                 </div>
               )}
             </div>

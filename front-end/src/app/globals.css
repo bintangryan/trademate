@@ -8,7 +8,7 @@
   
   --color-tawar: #2eb1e9;        /* Medium Blue: Beli & Tawar, Aksen Sekunder */
   --color-tawar-dark: #0f8dc2;   /* Tawar Hover/Dark Accent */
-  --color-tawar-light: #c6e8f7;  /* Tawar Light Border/Accent */
+  --color-tawar-light: #d6f1fc;  /* Tawar Light Border/Accent */
   
   --color-accent-bg: #c8c8c8;    /* Very Light Green/Mint: Soft Accent BG (#E5F4E3) */
   
@@ -32,22 +32,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --color-background: #1f2937;
-    --color-foreground: #f3f4f6;
-    --color-lelang: #5DA9E9; 
-    --color-lelang-dark: #4a98db;
-    --color-lelang-light: #91C1FF;
-    --color-tawar: #003F91;
-    --color-tawar-dark: #00367D;
-    --color-tawar-light: #D0E6FA;
-    --color-primary-text: #f3f4f6;
-    --color-danger: #f87171;
-  }
-}
+/* Hapus atau komentari dari sini */
+
+/* Sampai sini */
 
 body {
   background: var(--color-background);

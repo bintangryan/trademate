@@ -135,7 +135,7 @@ export default function CartPage() {
                     <input 
                         type="checkbox"
                         id="select-all"
-                        className="h-5 w-5 rounded border-gray-300 text-[var(--color-lelang)] focus:ring-[var(--color-lelang)]"
+                        className="h-5 w-5 rounded border-gray-300 accent-[var(--color-tawar)] focus:ring-[var(--color-tawar)]"
                         checked={selectedItems.size === cartItems.length && cartItems.length > 0}
                         onChange={handleSelectAll}
                     />
@@ -160,7 +160,7 @@ export default function CartPage() {
                     <div className="col-span-1 flex justify-center">
                         <input 
                             type="checkbox"
-                            className="h-5 w-5 rounded border-gray-300 text-[var(--color-lelang)] focus:ring-[var(--color-lelang)]"
+                            className="h-5 w-5 rounded border-gray-300 accent-[var(--color-tawar)] focus:ring-[var(--color-tawar)]"
                             checked={selectedItems.has(item.id)}
                             onChange={() => handleSelectItem(item.id)}
                         />
@@ -219,7 +219,7 @@ export default function CartPage() {
                 <button 
                   onClick={handleCheckout} 
                   disabled={selectedItems.size === 0}
-                  className="block text-center w-full mt-6 bg-[var(--color-tawar)] text-white py-3 rounded-lg font-semibold hover:bg-[var(--color-lelang)] transition-transform hover:scale-105 disabled:bg-gray-300 disabled:scale-100 disabled:cursor-not-allowed">
+                  className="block text-center w-full mt-6 bg-[var(--color-tawar)] text-white py-3 rounded-lg font-semibold hover:bg-[var(--color-tawar-dark)] transition-transform hover:scale-105 disabled:bg-gray-300 disabled:scale-100 disabled:cursor-not-allowed">
                   Lanjut ke Checkout ({selectedItems.size})
                 </button>
               </div>
