@@ -1,23 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react'; // Pastikan useEffect di-import
-import { useRouter, useSearchParams } from 'next/navigation'; // Import useSearchParams
+// --- 1. IMPORT 'Suspense' DARI REACT ---
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext'; 
 import Link from 'next/link'; 
 import { Mail, Lock, Gavel, ArrowRight } from 'lucide-react'; 
 
-export default function LoginPage() {
+// --- 2. UBAH NAMA KOMPONEN UTAMA ANDA ---
+// (dari 'export default function LoginPage' menjadi 'function LoginContent')
+function LoginContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [isError, setIsError] = useState(false); // State baru untuk melacak tipe pesan
+  const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth(); 
 
-  // --- useEffect YANG DIPERBARUI ---
+  // useEffect yang menggunakan useSearchParams() sekarang aman
+  // karena LoginContent akan dibungkus di dalam <Suspense>
   useEffect(() => {
     const verified = searchParams.get('verified');
     const error = searchParams.get('error');
@@ -39,7 +43,6 @@ export default function LoginPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, router]);
-  // --- AKHIR PERUBAHAN ---
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -107,7 +110,7 @@ export default function LoginPage() {
                   type="email"
                   id="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.value)}
                   className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl bg-gray-50 focus:border-[var(--color-tawar)] focus:outline-none focus:ring-0 transition-colors placeholder:text-gray-500 text-gray-900"
                   placeholder="Email Address"
                   required
@@ -123,7 +126,7 @@ export default function LoginPage() {
                   type="password"
                   id="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.value)}
                   className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl bg-gray-50 focus:border-[var(--color-lelang)] focus:outline-none focus:ring-0 transition-colors placeholder:text-gray-500 text-gray-900"
                   placeholder="Password"
                   required
@@ -141,7 +144,6 @@ export default function LoginPage() {
             </button>
           </form>
           
-          {/* Pesan dinamis untuk sukses atau error */}
           {message && (
             <p className={`mt-4 text-center text-sm font-semibold ${isError ? 'text-red-500' : 'text-green-600'}`}>
               {message}
@@ -157,5 +159,17 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+// --- 3. BUAT KOMPONEN WRAPPER BARU (INI YANG JADI DEFAULT EXPORT) ---
+export default function LoginPage() {
+  // Komponen ini tidak menggunakan 'use client'
+  // Ia akan me-render <Suspense> di server,
+  // dan <LoginContent> akan di-render di client.
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}> 
+      <LoginContent />
+    </Suspense>
   );
 }
