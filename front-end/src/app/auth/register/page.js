@@ -40,7 +40,7 @@ export default function RegisterPage() {
         throw new Error(data.message || 'Gagal mendaftar. Silakan coba lagi.');
       }
 
-      toast.success('Akun berhasil dibuat! Silakan masuk.');
+      toast.success('Akun berhasil dibuat! Cek Email dan Verfifikasi akun Kamu.');
       router.push('/auth/login');
       
     } catch (error) {

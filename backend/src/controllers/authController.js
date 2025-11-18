@@ -111,6 +111,8 @@ export const verifyEmail = async (req, res) => {
 };
 
 // --- FUNGSI loginUser YANG LENGKAP ---
+// backend/src/controllers/authController.js
+
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -119,49 +121,35 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    // --- LOGIKA LENGKAP UNTUK MENCARI USER ---
     const user = await prisma.user.findUnique({ 
       where: { email },
-      include: {
-        profile: true, 
-      }
+      include: { profile: true }
     });
-    // --- AKHIR LOGIKA LENGKAP ---
 
+    // --- PERUBAHAN DI SINI: Cek apakah user ada ---
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      // Kita kirim pesan spesifik jika email tidak ada di database
+      return res.status(404).json({ message: 'Akun belum terdaftar' });
     }
 
     const isPasswordValid = bcrypt.compareSync(password, user.password_hash);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Password salah' });
     }
     
-    // --- CEK VERIFIKASI BARU ---
     if (!user.isVerified) {
       return res.status(403).json({ 
-        message: 'Akun Anda belum diverifikasi. Silakan cek email Anda untuk tautan verifikasi.' 
+        message: 'Akun Anda belum diverifikasi. Silakan cek email Anda.' 
       });
     }
-    // --- AKHIR CEK VERIFIKASI ---
 
-    // --- LOGIKA LENGKAP UNTUK MEMBUAT TOKEN ---
     const token = jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email, 
-        role: user.role,
-        fullName: user.profile?.fullName || null 
-      },
+      { userId: user.id, email: user.email, role: user.role, fullName: user.profile?.fullName || null },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
-    // --- AKHIR LOGIKA LENGKAP ---
-    
-    res.status(200).json({
-      message: 'Login successful',
-      token: token
-    });
+
+    res.status(200).json({ message: 'Login successful', token: token });
 
   } catch (error) {
     console.error('Login error:', error);
