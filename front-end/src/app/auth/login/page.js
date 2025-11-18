@@ -110,7 +110,7 @@ function LoginContent() {
                   type="email"
                   id="email"
                   value={email}
-                  onChange={(e) => setEmail(e.value)}
+                  onChange={(e) => setEmail(e.target.value)} // <-- PERBAIKAN DI SINI
                   className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl bg-gray-50 focus:border-[var(--color-tawar)] focus:outline-none focus:ring-0 transition-colors placeholder:text-gray-500 text-gray-900"
                   placeholder="Email Address"
                   required
@@ -126,7 +126,7 @@ function LoginContent() {
                   type="password"
                   id="password"
                   value={password}
-                  onChange={(e) => setPassword(e.value)}
+                  onChange={(e) => setPassword(e.target.value)} // <-- PERBAIKAN DI SINI
                   className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl bg-gray-50 focus:border-[var(--color-lelang)] focus:outline-none focus:ring-0 transition-colors placeholder:text-gray-500 text-gray-900"
                   placeholder="Password"
                   required

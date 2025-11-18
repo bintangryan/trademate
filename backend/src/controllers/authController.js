@@ -13,13 +13,14 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    // --- (PENGETESAN) VALIDASI DOMAIN DIMATIKAN SEMENTARA ---
+    /* --- (PENGETESAN) VALIDASI DOMAIN DIMATIKAN SEMENTARA ---
     const emailString = email.toLowerCase();
     if (!emailString.endsWith('.ac.id') && !emailString.endsWith('.edu')) {
         return res.status(400).json({ 
           message: 'Registrasi gagal. Hanya email dengan domain .ac.id atau .edu yang diizinkan.' 
         });
      }
+    */
 
     const existingUser = await prisma.user.findFirst({ where: { email } });
     if (existingUser && existingUser.isVerified) {
