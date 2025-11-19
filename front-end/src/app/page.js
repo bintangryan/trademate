@@ -1,94 +1,143 @@
-// src/app/page.js
 'use client';
 
 import Link from 'next/link';
-import { Gavel, Tag, Zap, Wallet, Scale } from 'lucide-react';
+import { Gavel, ShoppingBag, ShieldCheck, Zap, Store, ArrowRight } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
-export default function LandingPage() {
-    return (
-        <div className="container mx-auto px-6 py-16 min-h-[80vh]">
+export default function Home() {
+  const { user } = useAuth();
+
+  const sellerLinkDestination = user ? "/dashboard/settings" : "/auth/register";
+
+  return (
+    <div className="min-h-screen bg-white flex flex-col">
+      
+      {/* --- 1. HERO SECTION --- */}
+      <section className="flex-grow flex items-center justify-center px-4 py-12 relative overflow-hidden
+        bg-gradient-to-br from-[var(--color-lelang)]/20 via-white to-[var(--color-tawar)]/20
+        border-b border-gray-100"
+      >
+        <div className="text-center max-w-3xl mx-auto space-y-8 relative z-10">
+          
+          <h1 className="text-4xl md:text-6xl font-black text-[var(--color-tawar)] leading-tight">
+            Satu Platform, <br />
+            <span className="text-[var(--color-lelang)]">Dua Cara Belanja.</span>
+          </h1>
+          
+          <p className="text-lg text-gray-600 md:px-12 font-medium">
+            Pilih cara yang kamu suka. Ikuti keseruan <b>Lelang</b> atau nikmati kemudahan <b>Beli Langsung & Tawar</b>.
+          </p>
+
+          {/* TOMBOL PILIHAN UTAMA */}
+          {/* PERUBAHAN DI SINI: Menggunakan 'grid grid-cols-2' untuk HP */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-row items-center justify-center gap-4 w-full pt-4">
             
-            {/* 1. HERO SECTION - Menggunakan Grid 2 Kolom untuk Layout Kiri-Kanan */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center mb-20">
-                
-                {/* KOLOM KIRI: Judul dan Deskripsi */}
-                <div className="text-center md:text-left">
-                    <h1 className="text-12xl md:text-6xl font-extrabold text-gray-900 mb-4 tracking-tight leading-snug"> 
-                        <span className="text-[var(--color-lelang)]">Solusi Mudah</span>
-                        <br />
-                        <span className="text-[var(--color-tawar)]">Jual Beli Barang Bekas</span><br/>
-                    </h1>
-                    <p className="text-xl text-gray-700 max-w-lg md:max-w-none mx-auto md:mx-0 font-medium">
-                        Temukan barang impianmu atau ubah aset lama menjadi uang. TradeMate memberikan kendali penuh untuk kamu menentukan harga
-                    </p>
+            {/* Tombol Lelang */}
+            <Link 
+              href="/shop/auction" 
+              // Hapus w-full di sini agar grid yang mengontrol lebar di mobile
+              className="group w-full sm:w-1/2 p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300
+                border-2 border-[var(--color-lelang)] 
+                bg-[var(--color-lelang)]/5 text-[var(--color-lelang)] 
+                hover:bg-[var(--color-lelang)] hover:text-white"
+            >
+              <div className="flex flex-col items-center gap-2 sm:gap-3">
+                <div className="p-2 sm:p-3 bg-white rounded-full shadow-sm group-hover:scale-110 transition-transform border border-[var(--color-lelang)]/20">
+                    <Gavel size={24} className="text-[var(--color-lelang)] sm:w-8 sm:h-8" /> {/* Ukuran icon responsif */}
                 </div>
-                
-                {/* KOLOM KANAN: Tombol CTA (Tersusun Vertikal) */}
-                <div className="flex flex-col space-y-8 items-center md:items-end">
-                    
-                    {/* CTA 1: LELANG (DOMINASI LELANG COLOR) */}
-                    <Link 
-                        href="/shop/auction" 
-                        className="block p-8 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,63,145,0.2)] transition-all duration-300 transform hover:scale-[1.03] bg-white border-4 border-[var(--color-lelang)]" 
-                    >
-                        <div className="flex items-center space-x-6">
-                            <Gavel size={48} className="text-[var(--color-lelang)] flex-shrink-0" />
-                            <div className="text-left">
-                                <h2 className="text-3xl font-bold text-gray-900 mb-1">Menangkan Lelang</h2>
-                                <p className="text-sm text-gray-600">Temukan produk incaranmu dan menangkan kesempatan lelang!</p>
-                            </div>
-                        </div>
-                        <button className="mt-5 w-full py-3 bg-[var(--color-lelang)] text-white font-bold rounded-xl hover:bg-[var(--color-lelang-dark)] transition-colors text-lg">
-                            Temukan Produk Lelang
-                        </button>
-                    </Link>
-
-                    {/* CTA 2: BELI & TAWAR (DOMINASI TAWAR COLOR) */}
-                    <Link href="/shop/buy-now" className="block p-8 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(93,169,233,0.3)] transition-all duration-300 transform hover:scale-[1.03] bg-white border-4 border-[var(--color-tawar)]">
-                        <div className="flex items-center space-x-6">
-                            <Tag size={48} className="text-[var(--color-tawar)] flex-shrink-0" />
-                            <div className="text-left">
-                                <h2 className="text-3xl font-bold text-gray-900 mb-1">Tawar Harga</h2>
-                                <p className="text-sm text-gray-600">Temukan produk dengan harga terbaik melalui fitur tawar harga</p>
-                            </div>
-                        </div>
-                        <button className="mt-5 w-full py-3 bg-[var(--color-tawar)] text-white font-bold rounded-xl hover:bg-[var(--color-tawar-dark)] transition-colors text-lg">
-                            Ajukan Penawaranmu
-                        </button>
-                    </Link>
+                <div className="text-center">
+                    <span className="block text-lg sm:text-2xl font-bold">Lelang</span>
+                    <span className="text-xs sm:text-sm font-medium opacity-80 group-hover:text-blue-100 group-hover:opacity-100 leading-tight hidden sm:block"> {/* Teks kecil sembunyi di HP jika terlalu sempit, atau biarkan block */}
+                        Tawar harga terbaikmu
+                    </span>
                 </div>
-            </div>
-            
-            {/* 2. FEATURE HIGHLIGHTS SECTION - VISUAL YANG LEBIH TERSTRUKTUR */}
-            <div className="mt-20 pt-16 border-t-2 border-gray-100 text-center bg-white p-12 rounded-3xl shadow-xl">
-                <h3 className="text-4xl font-extrabold text-gray-800 mb-12">Fleksibel, Cepat, dan Transparan</h3>
-                <div className="flex flex-col md:flex-row justify-center space-y-10 md:space-y-0 md:space-x-12">
-                    
-                    <div className="flex flex-col items-center max-w-xs">
-                         <Wallet size={40} className="text-white bg-[var(--color-tawar)] p-3 rounded-full mb-4 shadow-md" />
-                        <h4 className="font-bold text-xl text-gray-900 mb-2">Fleksibilitas Harga</h4>
-                        <p className="text-md text-gray-600">Kamu bebas menawarkan harga semaumu. Trademate memberikan akses negosiasi yang fleksibel dan terbuka</p>
-                    </div>
+              </div>
+            </Link>
 
-                    {/* Benefit 1: Aksi Cepat */}
-                    <div className="flex flex-col items-center max-w-xs">
-                        <Zap size={40} className="text-white bg-[var(--color-tawar)] p-3 rounded-full mb-4 shadow-md" />
-                        <h4 className="font-bold text-xl text-gray-900 mb-2">Proses Instan</h4>
-                        <p className="text-md text-gray-600">Proses bid dan tawar dilakukan secara real-time, memastikan pengalaman jual beli yang cepat dan efisien</p>
-                    </div>
-
-                
-                    
-                    {/* Benefit 3: Lelang Transparan */}
-                    <div className="flex flex-col items-center max-w-xs">
-                        <Scale size={40} className="text-white bg-[var(--color-tawar)] p-3 rounded-full mb-4 shadow-md" />
-                        <h4 className="font-bold text-xl text-gray-900 mb-2">Transparansi Penuh</h4>
-                        <p className="text-md text-gray-600">Setiap bid tercatat, setiap tawaran terlihat. Kamu selalu tahu posisi dan peluang kemenanganmu</p>
-                    </div>
-
+            {/* Tombol Beli & Tawar */}
+            <Link 
+              href="/shop/buy-now" 
+              className="group w-full sm:w-1/2 p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300
+                border-2 border-[var(--color-tawar)] 
+                bg-[var(--color-tawar)]/5 text-[var(--color-tawar)]
+                hover:bg-[var(--color-tawar)] hover:text-white"
+            >
+               <div className="flex flex-col items-center gap-2 sm:gap-3">
+                <div className="p-2 sm:p-3 bg-white rounded-full shadow-sm group-hover:scale-110 transition-transform border border-[var(--color-tawar)]/20">
+                    <ShoppingBag size={24} className="text-[var(--color-tawar)] sm:w-8 sm:h-8" />
                 </div>
-            </div>
+                <div className="text-center">
+                    <span className="block text-lg sm:text-2xl font-bold">Beli & Tawar</span>
+                    <span className="text-xs sm:text-sm font-medium opacity-80 group-hover:text-blue-100 group-hover:opacity-100 leading-tight hidden sm:block">
+                        Negosiasi langsung penjual
+                    </span>
+                </div>
+              </div>
+            </Link>
 
+          </div>
         </div>
-    );
+      </section>
+
+      {/* --- 2. KEUNGGULAN TRADEMATE --- */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-colors">
+                    <div className="bg-[var(--color-success-light)] p-3 rounded-lg text-[var(--color-success)] flex-shrink-0">
+                        <ShieldCheck size={24} />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-gray-900 text-lg">Transaksi Aman</h3>
+                        <p className="text-gray-600 text-sm mt-1">Dana ditahan di sistem sampai barang sampai ke tangan kamu</p>
+                    </div>
+                </div>
+                <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-colors">
+                    <div className="bg-[var(--color-tawar-light)] p-3 rounded-lg text-[var(--color-lelang)] flex-shrink-0">
+                        <Gavel size={24} />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-gray-900 text-lg">Sistem Lelang Adil</h3>
+                        <p className="text-gray-600 text-sm mt-1">Real-time bidding tanpa bot. Menangkan barang impian dengan harga terbaik</p>
+                    </div>
+                </div>
+                <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-colors">
+                    <div className="bg-[var(--color-warning-light)] p-3 rounded-lg text-[var(--color-warning)] flex-shrink-0">
+                        <Zap size={24} />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-gray-900 text-lg">Nego & Deal Cepat</h3>
+                        <p className="text-gray-600 text-sm mt-1">Ajukan tawaran hargamu langsung ke penjual untuk kesepakatan harga yang pas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </section>
+
+      {/* --- 3. INGIN MENJADI PENJUAL (CTA) --- */}
+      <section className="py-12 bg-[var(--color-lelang-dark)] text-white">
+        <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                    <div className="p-4 bg-white/10 rounded-full border border-white/20">
+                        <Store size={32} className="text-[var(--color-tawar-light)]" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold">Punya barang nganggur?</h2>
+                        <p className="text-white/90">Jadilah penjual dan mulai hasilkan uang di Trademate!</p>
+                    </div>
+                </div>
+                
+                <Link 
+                    href={sellerLinkDestination} 
+                    className="w-full md:w-auto px-8 py-3 bg-white text-gray-900 font-bold rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                >
+                    Daftar Jadi Penjual <ArrowRight size={18} />
+                </Link>
+            </div>
+        </div>
+      </section>
+
+    </div>
+  );
 }

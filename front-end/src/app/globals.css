@@ -17,12 +17,15 @@
   --color-background: #F4F4F9;    /* Very Light Gray/Blue (#F4F4F9) */
   
   /* Warna Sistem Emosi */
-  --color-danger: #EF4444;        /* Merah: Tolak, Gagal */
+  --color-danger: #ee5353;        /* Merah: Tolak, Gagal */
+  --color-danger-light: #fad2d2;        /* Merah: Tolak, Gagal */
   --color-danger-dark: #d31d1d;
-  --color-success: #10B981;
-  --color-success-dark: #059263;        /* Hijau: Terima, Sukses */
-  --color-warning: #f6b23d;       /* Kuning: Pending, Counter */
-  --color-warning-dark: #de9619;
+  --color-success: #08ae77;
+  --color-success-light: #b4f7e1;
+  --color-success-dark: #01714c;        /* Hijau: Terima, Sukses */
+  --color-warning: #e5a22d;       /* Kuning: Pending, Counter */
+  --color-warning-light: #fbedd4;       /* Kuning: Pending, Counter */
+  --color-warning-dark: #a46b08;
 }
 
 @theme inline {

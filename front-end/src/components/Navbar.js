@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react';
 import { 
   User, Heart, Gavel, Settings, Package, DollarSign, LogOut, 
   TrendingUp, Tag, ListOrdered, Store, ShoppingCart,
-  Bell
+  Bell, Menu, X, ChevronRight, LogIn
 } from 'lucide-react';
 
 // --- Komponen Avatar Pengguna ---
@@ -35,8 +35,6 @@ const UserAvatar = ({ name }) => {
         </div>
     );
 };
-// ------------------------------------
-
 
 const MenuItem = ({ href, children, icon: Icon }) => (
   <Link 
@@ -60,7 +58,8 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [animateNotif, setAnimateNotif] = useState(false);
   const [animateCart, setAnimateCart] = useState(false);
-  
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -68,6 +67,10 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   const handleLogout = () => {
     logout();
@@ -77,16 +80,9 @@ export default function Navbar() {
   const getNavLinkClasses = (href) => {
     const isActive = pathname === href || (pathname.startsWith(href) && href !== '/');
     let classes = "transition-colors flex items-center font-semibold relative py-1 nav-link";
-    
-    // Gunakan text-gray-800 sebagai warna dasar (non-aktif)
     classes += " text-[var(--color-lelang)]";
-    
-    // --- PERUBAHAN DI SINI ---
-    // Ganti 'tawar' menjadi 'lelang' untuk state aktif dan hover
     if (isActive) classes += " text-[var(--color-tawar)] active"; 
     else classes += " hover:text-[var(--color-tawar)]";
-    // --- AKHIR PERUBAHAN ---
-
     return classes;
   };
 
@@ -103,17 +99,28 @@ export default function Navbar() {
         className={`sticky top-0 z-40 transition-all duration-300 
             ${isScrolled 
                 ? 'bg-white/90 backdrop-blur-lg shadow-sm border-b border-gray-200' 
-                : 'bg-white'
+                : 'bg-white' 
             }`
         }
     >
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
 
-        {/* LOGO & NAVIGATION */}
-        <div className="flex items-center space-x-8">
+        {/* 1. TOMBOL HAMBURGER (Hanya Mobile) */}
+        <div className="md:hidden flex items-center mr-4">
+            <button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-700 hover:text-[var(--color-lelang)] p-1"
+            >
+                {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+        </div>
+
+        {/* 2. LOGO & NAVIGATION */}
+        {/* PERUBAHAN DI SINI: justify-center diganti jadi justify-start */}
+        <div className="flex items-center space-x-8 flex-1 md:flex-none justify-start">
           <Link 
             href="/" 
-            className="text-2xl font-black text-[var(--color-lelang)] tracking-wide transition-colors hover:text-[var(--color-lelang-light)]"
+            className="text-2xl font-black text-[var(--color-lelang)] tracking-wide transition-colors hover:text-[var(--color-lelang-light)] flex items-center"
           >
             <Image
                 src="/logo-tm.png"
@@ -121,8 +128,10 @@ export default function Navbar() {
                 width={150} 
                 height={40} 
                 priority 
+                className="w-28 md:w-[150px]" 
             />
           </Link>
+          {/* Navigasi Desktop (Hidden di Mobile) */}
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/shop/auction" className={getNavLinkClasses("/shop/auction")}>
               Lelang
@@ -133,7 +142,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* ALL ICONS (BELL, CART, USER) IN ONE FLEX */}
+        {/* 3. ALL ICONS (Kanan) */}
         <div className="flex items-center space-x-2 sm:space-x-4">
 
           {/* NOTIFICATION ICON */}
@@ -168,7 +177,8 @@ export default function Navbar() {
               {/* Dropdown Notifikasi */}
               {isNotifOpen && (
                 <div 
-                  className="absolute right-0 mt-3 w-80 max-h-[80vh] overflow-y-auto bg-white rounded-xl shadow-2xl z-20 border border-gray-200" 
+                  className="absolute right-0 mt-3 w-80 max-h-[80vh] overflow-y-auto bg-white rounded-xl shadow-2xl z-20 border border-gray-200 fixed md:absolute"
+                  style={{ maxWidth: '90vw', right: '5vw' }}
                   onMouseLeave={() => setIsNotifOpen(false)}
                 >
                     <div className="p-3 flex justify-between items-center border-b sticky top-0 bg-white">
@@ -176,7 +186,6 @@ export default function Navbar() {
                         {unreadCount > 0 && (
                             <button 
                                 onClick={markAllAsRead} 
-                                // --- PERUBAHAN DI SINI ---
                                 className="text-xs font-medium text-[var(--color-tawar)] hover:text-[var(--color-tawar-dark)] hover:underline"
                             >
                                 Tandai semua dibaca
@@ -188,19 +197,16 @@ export default function Navbar() {
                             <button
                                 key={notif.id}
                                 onClick={() => handleNotifClick(notif)}
-                                // --- PERUBAHAN DI SINI ---
                                 className="w-full text-left p-4 hover:bg-[var(--color-tawar-light)] transition-colors"
                             >
                                 <div className="flex items-start gap-3">
                                     {!notif.isRead && (
-                                        // --- PERUBAHAN DI SINI ---
                                         <div className="w-2.5 h-2.5 bg-[var(--color-tawar)] rounded-full mt-1.5 flex-shrink-0" aria-label="Belum dibaca"></div>
                                     )}
                                     <p className={`text-sm ${notif.isRead ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
                                         {notif.message}
                                     </p>
                                 </div>
-                                {/* --- PERUBAHAN DI SINI --- */}
                                 <p className={`text-xs mt-1 ${notif.isRead ? 'text-gray-400' : 'text-[var(--color-tawar)] font-medium'} ${!notif.isRead && 'ml-[17px]'}`}>
                                     {new Date(notif.createdAt).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                 </p>
@@ -234,7 +240,7 @@ export default function Navbar() {
               }`}
             />
             {user && cartItemCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h3.5 w-3.5 items-center justify-center rounded-full bg-[var(--color-warning)] text-[10px] font-bold text-white">
+              <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[var(--color-warning)] text-[10px] font-bold text-white">
                 {cartItemCount}
               </span>
             )}
@@ -259,7 +265,8 @@ export default function Navbar() {
               {/* Dropdown user */}
               {isDropdownOpen && (
                 <div 
-                  className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl z-20 border border-gray-200 overflow-hidden p-2"
+                  className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl z-20 border border-gray-200 overflow-hidden p-2 fixed md:absolute"
+                  style={{ maxWidth: '90vw', right: '5vw' }}
                   onMouseLeave={() => setIsDropdownOpen(false)}
                 >
                   <div className="space-y-1">
@@ -301,13 +308,62 @@ export default function Navbar() {
           ) : (
             <Link 
               href="/auth/login" 
-              className="bg-[var(--color-lelang)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-lelang-dark)] font-semibold transition-colors"
+              className="hidden md:inline-block bg-[var(--color-lelang)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-lelang-dark)] font-semibold transition-colors"
             >
               Login
             </Link>
           )}
         </div>
       </div>
+
+      {/* 4. MOBILE MENU DROPDOWN */}
+      <div 
+        className={`md:hidden fixed inset-0 z-30 bg-black/20 backdrop-blur-sm transition-opacity duration-300 
+          ${isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`} 
+        onClick={() => setIsMobileMenuOpen(false)} 
+      />
+
+      <div 
+        className={`md:hidden fixed top-[72px] left-0 w-full bg-white border-b border-gray-200 shadow-lg transition-all duration-300 ease-out transform z-40 origin-top
+          ${isMobileMenuOpen ? 'scale-y-100 opacity-100 translate-y-0' : 'scale-y-95 opacity-0 -translate-y-4 pointer-events-none'}
+        `}
+      >
+        <div className="flex flex-col p-4 space-y-3">
+            <Link 
+                href="/shop/auction" 
+                className="group flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-[var(--color-tawar-light)] transition-all duration-200 active:scale-98 border border-gray-100 hover:border-[var(--color-tawar-light)]"
+            >
+                <div className="flex items-center space-x-4">
+                    <span className="text-gray-700 font-semibold text-lg group-hover:text-[var(--color-tawar)] transition-colors">Lelang</span>
+                </div>
+                <ChevronRight size={20} className="text-gray-400 group-hover:translate-x-1 transition-transform" />
+            </Link>
+
+            <Link 
+                href="/shop/buy-now" 
+                className="group flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-[var(--color-tawar-light)] transition-all duration-200 active:scale-98 border border-gray-100 hover:border-[var(--color-tawar-light)]"
+            >
+                <div className="flex items-center space-x-4">
+                    
+                    <span className="text-gray-700 font-semibold text-lg group-hover:text-[var(--color-tawar)] transition-colors">Beli & Tawar</span>
+                </div>
+                <ChevronRight size={20} className="text-gray-400 group-hover:translate-x-1 transition-transform" />
+            </Link>
+
+            {!user && (
+                <div className="pt-2">
+                    <Link 
+                        href="/auth/login" 
+                        className="flex items-center justify-center w-full py-3.5 rounded-xl bg-[var(--color-lelang)] text-white font-bold text-lg shadow-lg hover:bg-[var(--color-lelang-dark)] active:scale-95 transition-all"
+                    >
+                        <LogIn size={20} className="mr-2" />
+                        Masuk / Daftar
+                    </Link>
+                </div>
+            )}
+        </div>
+      </div>
+
     </nav>
   );
 }
