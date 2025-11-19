@@ -409,9 +409,10 @@ export const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user.userId;
+        const productId = parseInt(id); // Gunakan ID produk yang sudah di-parse
 
         const product = await prisma.product.findUnique({
-            where: { id: parseInt(id) },
+            where: { id: productId },
         });
 
         if (!product) {
@@ -422,9 +423,28 @@ export const deleteProduct = async (req, res) => {
             return res.status(403).json({ message: 'Forbidden: You can only delete your own products' });
         }
 
-        await prisma.product.delete({
-            where: { id: parseInt(id) },
+        // --- PERBAIKAN: Gunakan transaksi untuk menghapus item terkait ---
+        await prisma.$transaction(async (tx) => {
+            
+            // 1. Hapus semua CartItem yang merujuk ke produk ini
+            // (Memperbaiki error 'cart_items_product_id_fkey')
+            await tx.cartItem.deleteMany({
+                where: { productId: productId },
+            });
+            
+            // 2. Hapus semua OrderItem yang merujuk ke produk ini
+            // (Ini juga menggunakan Foreign Key restrict secara default, jadi harus dihapus)
+            await tx.orderItem.deleteMany({
+                where: { productId: productId },
+            });
+            
+            // 3. Setelah semua dependensi terhapus, hapus produk utama.
+            // (Prisma akan otomatis menghapus Bids, Offers, dll. jika diatur CASCADE di schema)
+            await tx.product.delete({
+                where: { id: productId },
+            });
         });
+        // --- AKHIR PERBAIKAN ---
 
         res.status(200).json({ message: 'Product deleted successfully' });
     } catch (error) {
